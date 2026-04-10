@@ -7,6 +7,9 @@ import { fetchTikTokVideo } from "../lib/tiktok";
 import { getSetting } from "../lib/settings";
 import { Readable } from "node:stream";
 import { spawn } from "node:child_process";
+import { writeFile, unlink } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const router: IRouter = Router();
 
@@ -120,38 +123,96 @@ const ALLOWED_CDN_HOSTS = [
   "fbcdn.net",
 ];
 
+async function buildFacebookCookiesFile(): Promise<string | null> {
+  const cUser = await getSetting("facebook_c_user").catch(() => "");
+  const xs = await getSetting("facebook_xs").catch(() => "");
+  if (!cUser || !xs) return null;
+
+  const netscape = [
+    "# Netscape HTTP Cookie File",
+    `.facebook.com\tTRUE\t/\tTRUE\t9999999999\tc_user\t${cUser}`,
+    `.facebook.com\tTRUE\t/\tTRUE\t9999999999\txs\t${xs}`,
+  ].join("\n");
+
+  const cookiesPath = join(tmpdir(), `fb_cookies_${Date.now()}.txt`);
+  await writeFile(cookiesPath, netscape, "utf-8");
+  return cookiesPath;
+}
+
 async function streamViaYtDlp(rawUrl: string, filename: string, req: Request, res: Response): Promise<void> {
   req.log.info({ url: rawUrl }, "Streaming via yt-dlp");
 
-  res.setHeader("Content-Type", "video/mp4");
-  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-  res.setHeader("Cache-Control", "no-store");
+  const isFacebook = /facebook\.com|fb\.watch|fb\.com/i.test(rawUrl);
+  let cookiesFile: string | null = null;
+  if (isFacebook) {
+    cookiesFile = await buildFacebookCookiesFile();
+  }
 
   const args: string[] = [
     "-f", "best[ext=mp4][vcodec!*=none][acodec!*=none]/best[ext=mp4]/best",
     "--no-playlist",
     "--no-warnings",
     "-o", "-",
-    rawUrl,
   ];
+
+  if (cookiesFile) {
+    args.push("--cookies", cookiesFile);
+  }
+
+  args.push(rawUrl);
 
   const proc = spawn("yt-dlp", args);
 
-  proc.stdout.pipe(res);
+  let headersSent = false;
+  const stderrLines: string[] = [];
+
+  const cleanup = () => {
+    if (cookiesFile) unlink(cookiesFile).catch(() => {});
+  };
+
+  proc.stdout.on("data", (chunk: Buffer) => {
+    if (!headersSent) {
+      headersSent = true;
+      res.setHeader("Content-Type", "video/mp4");
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.setHeader("Cache-Control", "no-store");
+    }
+    res.write(chunk);
+  });
 
   proc.stderr.on("data", (chunk: Buffer) => {
     const msg = chunk.toString().trim();
-    if (msg) req.log.info({ ytdlp: msg }, "yt-dlp");
+    if (msg) {
+      req.log.info({ ytdlp: msg }, "yt-dlp");
+      stderrLines.push(msg);
+    }
   });
 
   proc.on("error", (err) => {
     req.log.error({ err }, "yt-dlp spawn error");
-    if (!res.headersSent) res.status(502).json({ error: "Failed to stream video" });
-    else if (!res.writableEnded) res.end();
+    cleanup();
+    if (!headersSent && !res.headersSent) {
+      res.status(502).json({ error: "Video downloader unavailable. Please try again." });
+    } else if (!res.writableEnded) {
+      res.end();
+    }
   });
 
   proc.on("close", (code) => {
-    if (code !== 0) req.log.warn({ code }, "yt-dlp exited with non-zero code");
+    cleanup();
+    if (code !== 0) {
+      req.log.warn({ code, stderr: stderrLines.join("\n") }, "yt-dlp exited with non-zero code");
+      if (!headersSent && !res.headersSent) {
+        const isAuthError = stderrLines.some((l) =>
+          /login required|not logged in|private video|403|cookies/i.test(l)
+        );
+        const errMsg = isAuthError
+          ? "This Facebook video is private or requires login. Ask the admin to configure Facebook cookies."
+          : "Could not download this video. It may have been deleted or is unavailable in your region.";
+        res.status(422).json({ error: errMsg });
+        return;
+      }
+    }
     if (!res.writableEnded) res.end();
   });
 

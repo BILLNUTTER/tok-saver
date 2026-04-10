@@ -64,6 +64,8 @@ const adminKeySchema = z.object({
 const settingsSchema = z.object({
   subscriptionPrice: z.coerce.number().min(0),
   weeklyPrice: z.coerce.number().min(0),
+  facebookCUser: z.string(),
+  facebookXs: z.string(),
   currency: z.string().min(1),
   paylorApiKey: z.string(),
   paylorApiUrl: z.string().url(),
@@ -771,6 +773,7 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string; onLogout: () => 
     resolver: zodResolver(settingsSchema),
     defaultValues: {
       subscriptionPrice: 0, weeklyPrice: 0, currency: "KES",
+      facebookCUser: "", facebookXs: "",
       paylorApiKey: "", paylorApiUrl: "https://api.paylorke.com/api/v1",
       paylorChannelId: "", paylorWebhookSecret: "", appUrl: "",
       adminKey: "", freeDownloadsPerUser: 1,
@@ -1121,6 +1124,32 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string; onLogout: () => 
                           <FormItem>
                             <FormLabel>Free Downloads Per User</FormLabel>
                             <FormControl><Input type="number" {...field} data-testid="input-setting-free-dl" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                    </div>
+
+                    {/* Facebook */}
+                    <div className="space-y-4 pt-2 border-t border-border">
+                      <div>
+                        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Facebook Session Cookies</h3>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Required to download Facebook videos. Open Facebook in your browser → DevTools → Application → Cookies → facebook.com, then copy <code className="bg-muted px-1 rounded text-[11px]">c_user</code> and <code className="bg-muted px-1 rounded text-[11px]">xs</code>.
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField control={settingsForm.control} name="facebookCUser" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>c_user (User ID)</FormLabel>
+                            <FormControl><Input placeholder="Your Facebook user ID" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={settingsForm.control} name="facebookXs" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>xs (Session Secret)</FormLabel>
+                            <FormControl><Input type="password" placeholder="xs cookie value" {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )} />

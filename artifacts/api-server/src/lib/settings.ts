@@ -11,6 +11,8 @@ const STATIC_DEFAULTS: Record<string, string> = {
   paylor_channel_id: "",
   paylor_webhook_secret: "",
   free_downloads_per_user: "1",
+  facebook_c_user: "",
+  facebook_xs: "",
 };
 
 function getDefaultAdminKey(): string {

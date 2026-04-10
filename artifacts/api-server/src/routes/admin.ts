@@ -48,7 +48,7 @@ router.get("/admin/users", requireAdmin, async (req, res): Promise<void> => {
 
 // Upgrade user: grant a 1-month Pro subscription
 router.post("/admin/users/:id/upgrade", requireAdmin, async (req, res): Promise<void> => {
-  const userId = parseInt(req.params.id, 10);
+  const userId = parseInt(req.params.id as string, 10);
   if (Number.isNaN(userId)) {
     res.status(400).json({ error: "Invalid user ID" });
     return;
@@ -81,7 +81,7 @@ router.post("/admin/users/:id/upgrade", requireAdmin, async (req, res): Promise<
 
 // Suspend user: block login + revoke all current tokens
 router.post("/admin/users/:id/suspend", requireAdmin, async (req, res): Promise<void> => {
-  const userId = parseInt(req.params.id, 10);
+  const userId = parseInt(req.params.id as string, 10);
   if (Number.isNaN(userId)) {
     res.status(400).json({ error: "Invalid user ID" });
     return;
@@ -104,7 +104,7 @@ router.post("/admin/users/:id/suspend", requireAdmin, async (req, res): Promise<
 
 // Unsuspend user: restore access
 router.post("/admin/users/:id/unsuspend", requireAdmin, async (req, res): Promise<void> => {
-  const userId = parseInt(req.params.id, 10);
+  const userId = parseInt(req.params.id as string, 10);
   if (Number.isNaN(userId)) {
     res.status(400).json({ error: "Invalid user ID" });
     return;
@@ -127,7 +127,7 @@ router.post("/admin/users/:id/unsuspend", requireAdmin, async (req, res): Promis
 
 // Delete user: remove user and all related data
 router.delete("/admin/users/:id", requireAdmin, async (req, res): Promise<void> => {
-  const userId = parseInt(req.params.id, 10);
+  const userId = parseInt(req.params.id as string, 10);
   if (Number.isNaN(userId)) {
     res.status(400).json({ error: "Invalid user ID" });
     return;
@@ -149,7 +149,7 @@ router.delete("/admin/users/:id", requireAdmin, async (req, res): Promise<void> 
 });
 
 router.delete("/admin/payments/:id/remove", requireAdmin, async (req, res): Promise<void> => {
-  const subId = parseInt(req.params.id, 10);
+  const subId = parseInt(req.params.id as string, 10);
   if (Number.isNaN(subId)) {
     res.status(400).json({ error: "Invalid subscription ID" });
     return;
@@ -172,7 +172,7 @@ router.delete("/admin/payments/:id/remove", requireAdmin, async (req, res): Prom
 });
 
 router.post("/admin/payments/:id/activate", requireAdmin, async (req, res): Promise<void> => {
-  const subId = parseInt(req.params.id, 10);
+  const subId = parseInt(req.params.id as string, 10);
   if (Number.isNaN(subId)) {
     res.status(400).json({ error: "Invalid subscription ID" });
     return;
@@ -237,6 +237,8 @@ router.get("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
     appUrl: settings.app_url ?? process.env.APP_URL ?? "",
     adminKey: settings.admin_key ?? "",
     freeDownloadsPerUser: Number(settings.free_downloads_per_user ?? 1),
+    facebookCUser: settings.facebook_c_user ?? "",
+    facebookXs: settings.facebook_xs ?? "",
   });
 });
 
@@ -278,6 +280,12 @@ router.put("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
   if (updates.freeDownloadsPerUser != null) {
     await setSetting("free_downloads_per_user", String(updates.freeDownloadsPerUser));
   }
+  if (updates.facebookCUser != null) {
+    await setSetting("facebook_c_user", updates.facebookCUser);
+  }
+  if (updates.facebookXs != null) {
+    await setSetting("facebook_xs", updates.facebookXs);
+  }
 
   const settings = await getAllSettings();
   res.json({
@@ -291,6 +299,8 @@ router.put("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
     appUrl: settings.app_url ?? process.env.APP_URL ?? "",
     adminKey: settings.admin_key ?? "",
     freeDownloadsPerUser: Number(settings.free_downloads_per_user ?? 1),
+    facebookCUser: settings.facebook_c_user ?? "",
+    facebookXs: settings.facebook_xs ?? "",
   });
 });
 
