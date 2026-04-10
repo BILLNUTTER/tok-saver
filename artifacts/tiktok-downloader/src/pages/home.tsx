@@ -52,8 +52,8 @@ import {
 
 const downloadSchema = z.object({
   url: z.string().url("Please enter a valid URL").regex(
-    /tiktok\.com|vm\.tiktok\.com|facebook\.com|fb\.watch|fb\.com/i,
-    "Please enter a TikTok or Facebook video link"
+    /tiktok\.com|vm\.tiktok\.com/i,
+    "Please enter a TikTok video link"
   ),
 });
 
@@ -64,8 +64,6 @@ const adminKeySchema = z.object({
 const settingsSchema = z.object({
   subscriptionPrice: z.coerce.number().min(0),
   weeklyPrice: z.coerce.number().min(0),
-  facebookCUser: z.string(),
-  facebookXs: z.string(),
   currency: z.string().min(1),
   paylorApiKey: z.string(),
   paylorApiUrl: z.string().url(),
@@ -109,8 +107,8 @@ function Landing() {
             </Badge>
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
-            Download TikTok & Facebook<br />
-            <span className="text-primary">Videos Without Watermarks</span>
+            Download TikTok Videos<br />
+            <span className="text-primary">Without Watermarks</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Get high-quality, watermark-free videos in seconds. Just paste the link — we handle the rest.
@@ -129,14 +127,10 @@ function Landing() {
             </Link>
           </div>
 
-          {/* Platform badges */}
+          {/* Platform badge */}
           <div className="flex items-center justify-center gap-4 pt-4 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground/70">Supports:</span>
             <div className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-1.5">
               <span className="font-semibold">TikTok</span>
-            </div>
-            <div className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-1.5">
-              <span className="font-semibold">Facebook</span>
             </div>
           </div>
         </div>
@@ -155,7 +149,7 @@ function Landing() {
                 step: "1",
                 icon: <Globe className="w-6 h-6 text-primary" />,
                 title: "Copy the Link",
-                desc: "Open TikTok or Facebook, find the video you want, and copy its link or URL.",
+                desc: "Open TikTok, find the video you want, and copy its link or URL.",
               },
               {
                 step: "2",
@@ -256,7 +250,7 @@ function Landing() {
               <CardContent className="space-y-3">
                 <div className="text-3xl font-black">KSH 0</div>
                 <ul className="space-y-2 text-sm">
-                  {["1 free download", "Watermark-free quality", "TikTok & Facebook"].map((f) => (
+                  {["1 free download", "Watermark-free quality", "TikTok videos"].map((f) => (
                     <li key={f} className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> {f}
                     </li>
@@ -285,7 +279,7 @@ function Landing() {
                   <span className="text-muted-foreground text-sm">/week</span>
                 </div>
                 <ul className="space-y-2 text-sm">
-                  {["Unlimited downloads", "Highest quality", "TikTok & Facebook", "Download history", "M-Pesa payment"].map((f) => (
+                  {["Unlimited downloads", "Highest quality", "TikTok videos", "Download history", "M-Pesa payment"].map((f) => (
                     <li key={f} className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> {f}
                     </li>
@@ -311,7 +305,7 @@ function Landing() {
                   <span className="text-muted-foreground text-sm">/month</span>
                 </div>
                 <ul className="space-y-2 text-sm">
-                  {["Unlimited downloads", "Highest quality", "TikTok & Facebook", "Download history", "M-Pesa payment"].map((f) => (
+                  {["Unlimited downloads", "Highest quality", "TikTok videos", "Download history", "M-Pesa payment"].map((f) => (
                     <li key={f} className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> {f}
                     </li>
@@ -382,7 +376,7 @@ function DownloadInterface() {
   function saveVideoToDevice(videoUrl: string, title?: string | null, sourceUrl?: string) {
     const token = localStorage.getItem("auth_token");
     const apiBase = (import.meta.env.VITE_API_URL as string | undefined) || "";
-    const defaultName = sourceUrl?.includes("facebook") || sourceUrl?.includes("fb.") ? "facebook-video" : "tiktok-video";
+    const defaultName = "tiktok-video";
     const safeFilename = (title || defaultName)
       .replace(/[^a-zA-Z0-9_\-\s]/g, "")
       .trim()
@@ -473,7 +467,7 @@ function DownloadInterface() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card border border-border p-5 rounded-xl">
         <div>
           <h2 className="text-xl font-bold">Download Video</h2>
-          <p className="text-muted-foreground text-sm mt-0.5">Paste a TikTok or Facebook video link below</p>
+          <p className="text-muted-foreground text-sm mt-0.5">Paste a TikTok video link below</p>
         </div>
         {subStatus && (
           isPro ? (
@@ -518,7 +512,7 @@ function DownloadInterface() {
                     <FormControl>
                       <div className="flex gap-2">
                         <Input
-                          placeholder="https://www.tiktok.com/... or facebook.com/..."
+                          placeholder="https://www.tiktok.com/..."
                           {...field}
                           className="flex-1 bg-background h-11"
                           data-testid="input-tiktok-url"
@@ -541,7 +535,6 @@ function DownloadInterface() {
           <div className="flex items-center gap-3 mt-4 text-xs text-muted-foreground">
             <span>Works with:</span>
             <span className="bg-muted rounded-full px-2.5 py-0.5 font-medium">TikTok</span>
-            <span className="bg-muted rounded-full px-2.5 py-0.5 font-medium">Facebook</span>
           </div>
 
           {/* Result */}
@@ -773,7 +766,6 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string; onLogout: () => 
     resolver: zodResolver(settingsSchema),
     defaultValues: {
       subscriptionPrice: 0, weeklyPrice: 0, currency: "KES",
-      facebookCUser: "", facebookXs: "",
       paylorApiKey: "", paylorApiUrl: "https://api.paylorke.com/api/v1",
       paylorChannelId: "", paylorWebhookSecret: "", appUrl: "",
       adminKey: "", freeDownloadsPerUser: 1,
@@ -1124,32 +1116,6 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string; onLogout: () => 
                           <FormItem>
                             <FormLabel>Free Downloads Per User</FormLabel>
                             <FormControl><Input type="number" {...field} data-testid="input-setting-free-dl" /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                      </div>
-                    </div>
-
-                    {/* Facebook */}
-                    <div className="space-y-4 pt-2 border-t border-border">
-                      <div>
-                        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Facebook Session Cookies</h3>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Required to download Facebook videos. Open Facebook in your browser → DevTools → Application → Cookies → facebook.com, then copy <code className="bg-muted px-1 rounded text-[11px]">c_user</code> and <code className="bg-muted px-1 rounded text-[11px]">xs</code>.
-                        </p>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField control={settingsForm.control} name="facebookCUser" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>c_user (User ID)</FormLabel>
-                            <FormControl><Input placeholder="Your Facebook user ID" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                        <FormField control={settingsForm.control} name="facebookXs" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>xs (Session Secret)</FormLabel>
-                            <FormControl><Input type="password" placeholder="xs cookie value" {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )} />

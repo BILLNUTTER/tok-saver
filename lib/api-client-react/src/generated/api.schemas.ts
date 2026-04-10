@@ -143,8 +143,6 @@ export interface AdminSettings {
   appUrl: string;
   adminKey: string;
   freeDownloadsPerUser: number;
-  facebookCUser: string;
-  facebookXs: string;
 }
 
 export interface AdminSettingsUpdate {
@@ -168,10 +166,6 @@ export interface AdminSettingsUpdate {
   adminKey?: string | null;
   /** @nullable */
   freeDownloadsPerUser?: number | null;
-  /** @nullable */
-  facebookCUser?: string | null;
-  /** @nullable */
-  facebookXs?: string | null;
 }
 
 export interface UserPaymentRecord {

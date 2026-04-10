@@ -237,8 +237,6 @@ router.get("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
     appUrl: settings.app_url ?? process.env.APP_URL ?? "",
     adminKey: settings.admin_key ?? "",
     freeDownloadsPerUser: Number(settings.free_downloads_per_user ?? 1),
-    facebookCUser: settings.facebook_c_user ?? "",
-    facebookXs: settings.facebook_xs ?? "",
   });
 });
 
@@ -280,13 +278,6 @@ router.put("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
   if (updates.freeDownloadsPerUser != null) {
     await setSetting("free_downloads_per_user", String(updates.freeDownloadsPerUser));
   }
-  if (updates.facebookCUser != null) {
-    await setSetting("facebook_c_user", updates.facebookCUser);
-  }
-  if (updates.facebookXs != null) {
-    await setSetting("facebook_xs", updates.facebookXs);
-  }
-
   const settings = await getAllSettings();
   res.json({
     subscriptionPrice: Number(settings.subscription_price ?? 49),
@@ -299,8 +290,6 @@ router.put("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
     appUrl: settings.app_url ?? process.env.APP_URL ?? "",
     adminKey: settings.admin_key ?? "",
     freeDownloadsPerUser: Number(settings.free_downloads_per_user ?? 1),
-    facebookCUser: settings.facebook_c_user ?? "",
-    facebookXs: settings.facebook_xs ?? "",
   });
 });
 

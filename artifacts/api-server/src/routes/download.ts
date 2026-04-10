@@ -6,18 +6,8 @@ import { DownloadVideoBody } from "@workspace/api-zod";
 import { fetchTikTokVideo } from "../lib/tiktok";
 import { getSetting } from "../lib/settings";
 import { Readable } from "node:stream";
-import { spawn } from "node:child_process";
-import { writeFile, unlink } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 
 const router: IRouter = Router();
-
-function detectPlatform(url: string): "tiktok" | "facebook" | null {
-  if (/tiktok\.com|vm\.tiktok\.com/i.test(url)) return "tiktok";
-  if (/facebook\.com|fb\.watch|fb\.com/i.test(url)) return "facebook";
-  return null;
-}
 
 router.post("/download", requireAuth, async (req, res): Promise<void> => {
   const parsed = DownloadVideoBody.safeParse(req.body);
@@ -27,9 +17,8 @@ router.post("/download", requireAuth, async (req, res): Promise<void> => {
   }
   const { url } = parsed.data;
 
-  const platform = detectPlatform(url);
-  if (!platform) {
-    res.status(400).json({ error: "Unsupported URL. Please paste a TikTok or Facebook video link." });
+  if (!/tiktok\.com|vm\.tiktok\.com/i.test(url)) {
+    res.status(400).json({ error: "Unsupported URL. Please paste a TikTok video link." });
     return;
   }
 
@@ -66,14 +55,7 @@ router.post("/download", requireAuth, async (req, res): Promise<void> => {
   }
 
   try {
-    let videoInfo: { downloadUrl: string; title: string | null; thumbnailUrl: string | null };
-
-    if (platform === "facebook") {
-      const { fetchInstagramVideo } = await import("../lib/instagram");
-      videoInfo = await fetchInstagramVideo(url);
-    } else {
-      videoInfo = await fetchTikTokVideo(url);
-    }
+    const videoInfo = await fetchTikTokVideo(url);
 
     await db.insert(downloadsTable).values({ userId, url });
 
@@ -88,8 +70,8 @@ router.post("/download", requireAuth, async (req, res): Promise<void> => {
       remainingFreeDownloads,
     });
   } catch (err) {
-    req.log.error({ err, platform }, "Failed to fetch video");
-    res.status(422).json({ error: `Could not process this ${platform} URL. Please check the link and try again.` });
+    req.log.error({ err }, "Failed to fetch TikTok video");
+    res.status(422).json({ error: "Could not process this TikTok URL. Please check the link and try again." });
   }
 });
 
@@ -120,106 +102,7 @@ const ALLOWED_CDN_HOSTS = [
   "akamaized.net",
   "v19-webapp.tiktok.com",
   "v19.tiktokcdn.com",
-  "fbcdn.net",
 ];
-
-async function buildFacebookCookiesFile(): Promise<string | null> {
-  const cUser = await getSetting("facebook_c_user").catch(() => "");
-  const xs = await getSetting("facebook_xs").catch(() => "");
-  if (!cUser || !xs) return null;
-
-  const netscape = [
-    "# Netscape HTTP Cookie File",
-    `.facebook.com\tTRUE\t/\tTRUE\t9999999999\tc_user\t${cUser}`,
-    `.facebook.com\tTRUE\t/\tTRUE\t9999999999\txs\t${xs}`,
-  ].join("\n");
-
-  const cookiesPath = join(tmpdir(), `fb_cookies_${Date.now()}.txt`);
-  await writeFile(cookiesPath, netscape, "utf-8");
-  return cookiesPath;
-}
-
-async function streamViaYtDlp(rawUrl: string, filename: string, req: Request, res: Response): Promise<void> {
-  req.log.info({ url: rawUrl }, "Streaming via yt-dlp");
-
-  const isFacebook = /facebook\.com|fb\.watch|fb\.com/i.test(rawUrl);
-  let cookiesFile: string | null = null;
-  if (isFacebook) {
-    cookiesFile = await buildFacebookCookiesFile();
-  }
-
-  const args: string[] = [
-    "-f", "best[ext=mp4][vcodec!*=none][acodec!*=none]/best[ext=mp4]/best",
-    "--no-playlist",
-    "--no-warnings",
-    "-o", "-",
-  ];
-
-  if (cookiesFile) {
-    args.push("--cookies", cookiesFile);
-  }
-
-  args.push(rawUrl);
-
-  const proc = spawn("yt-dlp", args);
-
-  let headersSent = false;
-  const stderrLines: string[] = [];
-
-  const cleanup = () => {
-    if (cookiesFile) unlink(cookiesFile).catch(() => {});
-  };
-
-  proc.stdout.on("data", (chunk: Buffer) => {
-    if (!headersSent) {
-      headersSent = true;
-      res.setHeader("Content-Type", "video/mp4");
-      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-      res.setHeader("Cache-Control", "no-store");
-    }
-    res.write(chunk);
-  });
-
-  proc.stderr.on("data", (chunk: Buffer) => {
-    const msg = chunk.toString().trim();
-    if (msg) {
-      req.log.info({ ytdlp: msg }, "yt-dlp");
-      stderrLines.push(msg);
-    }
-  });
-
-  proc.on("error", (err) => {
-    req.log.error({ err }, "yt-dlp spawn error");
-    cleanup();
-    if (!headersSent && !res.headersSent) {
-      res.status(502).json({ error: "Video downloader unavailable. Please try again." });
-    } else if (!res.writableEnded) {
-      res.end();
-    }
-  });
-
-  proc.on("close", (code) => {
-    cleanup();
-    if (code !== 0) {
-      req.log.warn({ code, stderr: stderrLines.join("\n") }, "yt-dlp exited with non-zero code");
-      if (!headersSent && !res.headersSent) {
-        const isAuthError = stderrLines.some((l) =>
-          /login required|not logged in|private video|403|cookies/i.test(l)
-        );
-        const errMsg = isAuthError
-          ? "This Facebook video is private or requires login. Ask the admin to configure Facebook cookies."
-          : "Could not download this video. It may have been deleted or is unavailable in your region.";
-        res.status(422).json({ error: errMsg });
-        return;
-      }
-    }
-    if (!res.writableEnded) res.end();
-  });
-
-  req.on("close", () => {
-    if (proc.exitCode === null) proc.kill();
-  });
-}
 
 router.get("/download-proxy", requireAuth, async (req, res): Promise<void> => {
   const rawUrl = typeof req.query.url === "string" ? req.query.url : null;
@@ -227,11 +110,6 @@ router.get("/download-proxy", requireAuth, async (req, res): Promise<void> => {
 
   if (!rawUrl) {
     res.status(400).json({ error: "Missing url query parameter" });
-    return;
-  }
-
-  if (/facebook\.com|fb\.watch|fb\.com/i.test(rawUrl)) {
-    await streamViaYtDlp(rawUrl, filename, req, res);
     return;
   }
 

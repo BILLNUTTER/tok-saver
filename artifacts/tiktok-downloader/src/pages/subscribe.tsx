@@ -318,7 +318,7 @@ export default function Subscribe() {
             <ul className="space-y-3">
               {[
                 "Unlimited watermark-free downloads",
-                "TikTok & Facebook support",
+                "TikTok watermark-free downloads",
                 "Highest quality video resolution",
                 "Fastest download speeds",
                 "Secure and private",

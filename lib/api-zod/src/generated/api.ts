@@ -244,8 +244,6 @@ export const AdminGetSettingsHeader = zod.object({
 export const AdminGetSettingsResponse = zod.object({
   subscriptionPrice: zod.number(),
   weeklyPrice: zod.number(),
-  facebookCUser: zod.string(),
-  facebookXs: zod.string(),
   currency: zod.string(),
   paylorApiKey: zod.string().describe("Bearer token (pk_...) — used for all Paylor API calls (STK push + status checks)."),
   paylorApiUrl: zod.string(),
@@ -271,8 +269,6 @@ export const AdminUpdateSettingsHeader = zod.object({
 export const AdminUpdateSettingsBody = zod.object({
   subscriptionPrice: zod.number().nullish(),
   weeklyPrice: zod.number().nullish(),
-  facebookCUser: zod.string().nullish(),
-  facebookXs: zod.string().nullish(),
   currency: zod.string().nullish(),
   paylorApiKey: zod.string().nullish(),
   paylorApiUrl: zod.string().nullish(),
@@ -286,8 +282,6 @@ export const AdminUpdateSettingsBody = zod.object({
 export const AdminUpdateSettingsResponse = zod.object({
   subscriptionPrice: zod.number(),
   weeklyPrice: zod.number(),
-  facebookCUser: zod.string(),
-  facebookXs: zod.string(),
   currency: zod.string(),
   paylorApiKey: zod.string(),
   paylorApiUrl: zod.string(),
