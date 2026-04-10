@@ -241,6 +241,11 @@ export const AdminGetSettingsResponse = zod.object({
   paylorApiKey: zod.string(),
   paylorApiUrl: zod.string(),
   paylorChannelId: zod.string(),
+  appUrl: zod
+    .string()
+    .describe(
+      "Public URL of this app (e.g. https:\/\/yourapp.vercel.app). Used to build the Paylor callback URL.",
+    ),
   adminKey: zod.string(),
   freeDownloadsPerUser: zod.number(),
 });
@@ -259,6 +264,7 @@ export const AdminUpdateSettingsBody = zod.object({
   paylorApiKey: zod.string().nullish(),
   paylorApiUrl: zod.string().nullish(),
   paylorChannelId: zod.string().nullish(),
+  appUrl: zod.string().nullish(),
   adminKey: zod.string().nullish(),
   freeDownloadsPerUser: zod.number().nullish(),
 });
@@ -269,6 +275,11 @@ export const AdminUpdateSettingsResponse = zod.object({
   paylorApiKey: zod.string(),
   paylorApiUrl: zod.string(),
   paylorChannelId: zod.string(),
+  appUrl: zod
+    .string()
+    .describe(
+      "Public URL of this app (e.g. https:\/\/yourapp.vercel.app). Used to build the Paylor callback URL.",
+    ),
   adminKey: zod.string(),
   freeDownloadsPerUser: zod.number(),
 });

@@ -90,14 +90,16 @@ router.post("/subscription/subscribe", requireAuth, async (req, res): Promise<vo
   });
 
   try {
+    // Prefer admin-configured app_url, then APP_URL env var, then derive from headers.
+    const configuredAppUrl = await getSetting("app_url");
     const forwardedProto =
       (req.headers["x-forwarded-proto"] as string)?.split(",")[0]?.trim() ?? "https";
     const forwardedHost =
       (req.headers["x-forwarded-host"] as string)?.split(",")[0]?.trim() ?? req.hostname;
-    const appUrl = process.env.APP_URL ?? `${forwardedProto}://${forwardedHost}`;
-    const callbackUrl = `${appUrl}/api/subscription/callback?token=${callbackToken}`;
+    const appUrl = configuredAppUrl || process.env.APP_URL || `${forwardedProto}://${forwardedHost}`;
+    const callbackUrl = `${appUrl}/api/subscription/callback`;
 
-    req.log.info({ callbackUrl, reference }, "Initiating Paylor STK push");
+    req.log.info({ callbackUrl, appUrl, configuredAppUrl, reference }, "Initiating Paylor STK push");
 
     const stkPushUrl = `${paylorApiUrl.replace(/\/$/, "")}/merchants/payments/stk-push`;
 

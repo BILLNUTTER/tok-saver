@@ -132,6 +132,8 @@ export interface AdminSettings {
   paylorApiKey: string;
   paylorApiUrl: string;
   paylorChannelId: string;
+  /** Public URL of this app (e.g. https://yourapp.vercel.app). Used to build the Paylor callback URL. */
+  appUrl: string;
   adminKey: string;
   freeDownloadsPerUser: number;
 }
@@ -147,6 +149,8 @@ export interface AdminSettingsUpdate {
   paylorApiUrl?: string | null;
   /** @nullable */
   paylorChannelId?: string | null;
+  /** @nullable */
+  appUrl?: string | null;
   /** @nullable */
   adminKey?: string | null;
   /** @nullable */
