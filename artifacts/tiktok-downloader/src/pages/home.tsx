@@ -70,6 +70,7 @@ const settingsSchema = z.object({
   appUrl: z.string(),
   adminKey: z.string().min(1),
   freeDownloadsPerUser: z.coerce.number().min(0),
+  instagramSessionId: z.string(),
 });
 
 export default function Home() {
@@ -608,7 +609,8 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
       paylorWebhookSecret: "",
       appUrl: "",
       adminKey: "",
-      freeDownloadsPerUser: 1
+      freeDownloadsPerUser: 1,
+      instagramSessionId: "",
     },
   });
 
@@ -1177,6 +1179,46 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
                           </p>
                         </div>
                       </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-border space-y-5">
+                      <div>
+                        <h3 className="text-lg font-semibold">Instagram & Facebook</h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Instagram requires a session cookie to download videos. Log in to Instagram in your browser,
+                          open DevTools → Application → Cookies → instagram.com, and copy the <code className="bg-muted px-1 rounded text-xs">sessionid</code> value.
+                        </p>
+                      </div>
+
+                      {!settingsForm.watch("instagramSessionId") && (
+                        <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
+                          <TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-semibold">Instagram downloads are not configured</p>
+                            <p className="text-xs mt-0.5 text-amber-400/80">
+                              Add your Instagram Session ID below to enable Instagram and Facebook video downloads.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      <FormField control={settingsForm.control} name="instagramSessionId" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Instagram Session ID</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              {...field}
+                              placeholder="Paste your Instagram sessionid cookie value"
+                              data-testid="input-setting-instagram-session"
+                            />
+                          </FormControl>
+                          <FormDescription className="text-xs">
+                            Found in your browser's DevTools under Cookies for instagram.com. Keep this secret — it grants access to your account.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
                     </div>
 
                     <div className="pt-4 border-t border-border">

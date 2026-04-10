@@ -1,4 +1,8 @@
+import { execFile } from "child_process";
+import { promisify } from "util";
 import { logger } from "./logger";
+
+const execFileAsync = promisify(execFile);
 
 interface VideoInfo {
   downloadUrl: string;
@@ -6,54 +10,42 @@ interface VideoInfo {
   thumbnailUrl: string | null;
 }
 
-// cobalt.tools — free, open-source, no API key required for basic use.
-// Supports Instagram Reels, posts, Stories, and Facebook videos.
-// API docs: https://github.com/imputnet/cobalt
-const COBALT_API = "https://api.cobalt.tools/";
-
+/**
+ * Validates an Instagram or Facebook URL format, then returns it as the
+ * downloadUrl.  The actual video bytes are streamed by the proxy endpoint
+ * via yt-dlp (see download.ts → streamViaYtDlp).
+ *
+ * We intentionally skip a yt-dlp "metadata" call here so the POST /download
+ * response is instant — yt-dlp will only run once, at proxy time.
+ */
 export async function fetchInstagramVideo(url: string): Promise<VideoInfo> {
   const cleanUrl = url.split("?")[0];
-  logger.info({ url: cleanUrl }, "Fetching Instagram/Facebook video via cobalt");
-
-  const res = await fetch(COBALT_API, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-    },
-    body: JSON.stringify({ url: cleanUrl }),
-    signal: AbortSignal.timeout(20_000),
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`cobalt API error ${res.status}: ${text.slice(0, 200)}`);
-  }
-
-  const data = (await res.json()) as {
-    status: string;
-    url?: string;
-    filename?: string;
-    error?: { code?: string; context?: unknown };
+  logger.info({ url: cleanUrl }, "Preparing Instagram/Facebook download via yt-dlp");
+  return {
+    downloadUrl: cleanUrl,
+    title: null,
+    thumbnailUrl: null,
   };
+}
 
-  logger.info({ status: data.status, url: data.url?.slice(0, 80) }, "cobalt response");
-
-  if (data.status === "error") {
-    const code = data.error?.code ?? "unknown";
-    throw new Error(`cobalt error: ${code}`);
-  }
-
-  // "tunnel" → proxied through cobalt servers (no expiry issues)
-  // "redirect" → direct CDN URL (may expire)
-  // "picker" → multiple streams (take the first)
-  if ((data.status === "tunnel" || data.status === "redirect") && data.url) {
+/**
+ * Run yt-dlp and collect its JSON metadata (title, thumbnail).
+ * Used optionally for enriching the response without blocking the download.
+ */
+export async function getInstagramMetadata(url: string): Promise<{ title: string | null; thumbnailUrl: string | null }> {
+  try {
+    const { stdout } = await execFileAsync(
+      "yt-dlp",
+      ["--dump-json", "--no-playlist", url],
+      { timeout: 20_000 }
+    );
+    const data = JSON.parse(stdout.trim()) as { title?: string; thumbnail?: string };
     return {
-      downloadUrl: data.url,
-      title: data.filename ? data.filename.replace(/\.[^/.]+$/, "") : null,
-      thumbnailUrl: null,
+      title: data.title ?? null,
+      thumbnailUrl: data.thumbnail ?? null,
     };
+  } catch (err) {
+    logger.warn({ err }, "yt-dlp metadata fetch failed — continuing without title");
+    return { title: null, thumbnailUrl: null };
   }
-
-  throw new Error(`Unexpected cobalt response status: ${data.status}`);
 }

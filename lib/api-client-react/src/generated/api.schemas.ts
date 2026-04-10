@@ -143,6 +143,7 @@ export interface AdminSettings {
   appUrl: string;
   adminKey: string;
   freeDownloadsPerUser: number;
+  instagramSessionId: string;
 }
 
 export interface AdminSettingsUpdate {
@@ -166,6 +167,8 @@ export interface AdminSettingsUpdate {
   adminKey?: string | null;
   /** @nullable */
   freeDownloadsPerUser?: number | null;
+  /** @nullable */
+  instagramSessionId?: string | null;
 }
 
 export interface UserPaymentRecord {

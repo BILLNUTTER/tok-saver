@@ -256,6 +256,7 @@ export const AdminGetSettingsResponse = zod.object({
     ),
   adminKey: zod.string(),
   freeDownloadsPerUser: zod.number(),
+  instagramSessionId: zod.string(),
 });
 
 /**
@@ -277,6 +278,7 @@ export const AdminUpdateSettingsBody = zod.object({
   appUrl: zod.string().nullish(),
   adminKey: zod.string().nullish(),
   freeDownloadsPerUser: zod.number().nullish(),
+  instagramSessionId: zod.string().nullish(),
 });
 
 export const AdminUpdateSettingsResponse = zod.object({
@@ -294,6 +296,7 @@ export const AdminUpdateSettingsResponse = zod.object({
     ),
   adminKey: zod.string(),
   freeDownloadsPerUser: zod.number(),
+  instagramSessionId: zod.string(),
 });
 
 /**
