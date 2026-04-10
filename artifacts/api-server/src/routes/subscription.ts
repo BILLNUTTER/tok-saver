@@ -238,54 +238,71 @@ router.post("/subscription/callback", async (req, res): Promise<void> => {
 
   req.log.info({ rawBody: req.body, query: req.query }, "Paylor raw callback received");
 
-  // Accept any field name Paylor might use for reference and status.
+  // Paylor webhook structure (confirmed from live integration):
+  // { event: "payment.success", transaction: { id: "TR_...", status: "COMPLETED", providerRef: "..." } }
   const body = req.body as Record<string, unknown>;
 
-  // Walk nested objects in case Paylor wraps data (e.g. body.data.reference)
-  const flat = { ...body, ...(body.data && typeof body.data === "object" ? body.data as Record<string, unknown> : {}) };
+  // Unwrap nested containers: body.data (generic) and body.transaction (Paylor-specific)
+  const txNested = (body.transaction && typeof body.transaction === "object" ? body.transaction as Record<string, unknown> : {});
+  const dataNested = (body.data && typeof body.data === "object" ? body.data as Record<string, unknown> : {});
+  const flat = { ...body, ...dataNested, ...txNested };
 
-  const reference = (
-    flat.reference ?? flat.payment_reference ?? flat.order_id ?? flat.ref ??
-    flat.transaction_id ?? flat.transactionId ?? flat.merchantReference ?? ""
+  // "event" field tells us what happened — log it and use it as a status signal too
+  const event = (body.event ?? "") as string;
+
+  // The Paylor transaction ID (their ID, e.g. "69d917eb...") — used to look up our subscription
+  const paylorTxId = (
+    flat.id ?? flat.transactionId ?? flat.transaction_id ?? flat.checkoutRequestId ?? ""
+  ) as string;
+
+  // Our internal reference (e.g. "TKT-1-...") — fallback lookup if Paylor sends it
+  const internalRef = (
+    flat.reference ?? flat.payment_reference ?? flat.merchantReference ?? flat.ref ?? flat.order_id ?? ""
   ) as string;
 
   const status = (
-    flat.status ?? flat.payment_status ?? flat.transaction_status ??
-    flat.paymentStatus ?? flat.state ?? ""
+    flat.status ?? flat.payment_status ?? flat.transaction_status ?? flat.paymentStatus ?? flat.state ?? ""
   ) as string;
 
-  req.log.info({ reference, status }, "Paylor callback parsed");
+  req.log.info({ event, paylorTxId, internalRef, status }, "Paylor callback parsed");
 
-  if (!reference || !status) {
-    req.log.warn({ body }, "Callback missing reference or status — returning 200 to stop retries");
+  const SUCCESSFUL_STATUSES = new Set(["success", "completed", "paid", "approved", "successful", "complete"]);
+  const isSuccess = SUCCESSFUL_STATUSES.has(status.toLowerCase()) || event === "payment.success";
+
+  if (!isSuccess) {
+    req.log.warn({ event, status, paylorTxId }, "Callback is not a success event — ignoring");
     res.status(200).json({ message: "ok" });
     return;
   }
 
-  const SUCCESSFUL_STATUSES = new Set(["success", "completed", "paid", "approved", "successful", "complete"]);
+  // Try to find the pending subscription — first by Paylor transaction ID, then by our internal reference
+  let pendingSub: typeof subscriptionsTable.$inferSelect | undefined;
 
-  if (SUCCESSFUL_STATUSES.has(status.toLowerCase())) {
-    // Match by reference alone — token is a nice-to-have but may be stripped by the gateway
-    const [pendingSub] = await db
+  if (paylorTxId) {
+    const rows = await db
       .select()
       .from(subscriptionsTable)
-      .where(
-        and(
-          eq(subscriptionsTable.paymentReference, reference),
-          eq(subscriptionsTable.status, "pending")
-        )
-      );
+      .where(and(eq(subscriptionsTable.paylorPaymentId, paylorTxId), eq(subscriptionsTable.status, "pending")));
+    pendingSub = rows[0];
+  }
 
-    if (!pendingSub) {
-      req.log.warn({ reference }, "No matching pending subscription — may already be active");
-    } else {
-      await db
-        .update(subscriptionsTable)
-        .set({ status: "active" })
-        .where(eq(subscriptionsTable.id, pendingSub.id));
+  if (!pendingSub && internalRef) {
+    const rows = await db
+      .select()
+      .from(subscriptionsTable)
+      .where(and(eq(subscriptionsTable.paymentReference, internalRef), eq(subscriptionsTable.status, "pending")));
+    pendingSub = rows[0];
+  }
 
-      req.log.info({ userId: pendingSub.userId, reference }, "Subscription activated via callback");
-    }
+  if (!pendingSub) {
+    req.log.warn({ paylorTxId, internalRef }, "No matching pending subscription — may already be active or reference mismatch");
+  } else {
+    await db
+      .update(subscriptionsTable)
+      .set({ status: "active" })
+      .where(eq(subscriptionsTable.id, pendingSub.id));
+
+    req.log.info({ userId: pendingSub.userId, paylorTxId, internalRef }, "Subscription activated via Paylor webhook");
   }
 
   res.status(200).json({ message: "ok" });
