@@ -304,7 +304,12 @@ router.get("/admin/stats", requireAdmin, async (req, res): Promise<void> => {
   const [revenueResult] = await db
     .select({ total: sum(subscriptionsTable.amountPaid) })
     .from(subscriptionsTable)
-    .where(gte(subscriptionsTable.createdAt, startOfMonth));
+    .where(
+      and(
+        eq(subscriptionsTable.status, "active"),
+        gte(subscriptionsTable.createdAt, startOfMonth)
+      )
+    );
 
   const [newUsersResult] = await db
     .select({ count: count() })
