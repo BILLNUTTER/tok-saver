@@ -956,17 +956,14 @@ components:
           type: string
         paylorApiKey:
           type: string
-          description: "Public/publishable key (pk_...) — used only for initiating STK push payments."
-        paylorSecretKey:
-          type: string
-          description: "Secret key (sk_...) — required for reading transaction status. Find in Paylor dashboard."
+          description: "Bearer token (pk_...) — used for all Paylor API calls (STK push + status checks)."
         paylorApiUrl:
           type: string
         paylorChannelId:
           type: string
         paylorWebhookSecret:
           type: string
-          description: "Webhook secret from Paylor dashboard. Used to verify incoming webhook signatures."
+          description: "Key ID from Paylor dashboard — used as webhook secret for HMAC verification."
         appUrl:
           type: string
           description: "Public URL of this app (e.g. https://yourapp.vercel.app). Used to build the Paylor callback URL."
@@ -979,7 +976,6 @@ components:
         - weeklyPrice
         - currency
         - paylorApiKey
-        - paylorSecretKey
         - paylorApiUrl
         - paylorChannelId
         - paylorWebhookSecret
@@ -997,8 +993,6 @@ components:
         currency:
           type: ["string", "null"]
         paylorApiKey:
-          type: ["string", "null"]
-        paylorSecretKey:
           type: ["string", "null"]
         paylorApiUrl:
           type: ["string", "null"]

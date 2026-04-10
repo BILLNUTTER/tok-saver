@@ -231,7 +231,6 @@ router.get("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
     weeklyPrice: Number(settings.weekly_price ?? 19),
     currency: settings.currency ?? "KES",
     paylorApiKey: settings.paylor_api_key ?? "",
-    paylorSecretKey: settings.paylor_secret_key ?? "",
     paylorApiUrl: settings.paylor_api_url ?? "https://api.paylorke.com/api/v1",
     paylorChannelId: settings.paylor_channel_id ?? "",
     paylorWebhookSecret: settings.paylor_webhook_secret ?? "",
@@ -261,9 +260,6 @@ router.put("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
   if (updates.paylorApiKey != null) {
     await setSetting("paylor_api_key", updates.paylorApiKey);
   }
-  if (updates.paylorSecretKey != null) {
-    await setSetting("paylor_secret_key", updates.paylorSecretKey);
-  }
   if (updates.paylorApiUrl != null) {
     await setSetting("paylor_api_url", updates.paylorApiUrl);
   }
@@ -289,7 +285,6 @@ router.put("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
     weeklyPrice: Number(settings.weekly_price ?? 19),
     currency: settings.currency ?? "KES",
     paylorApiKey: settings.paylor_api_key ?? "",
-    paylorSecretKey: settings.paylor_secret_key ?? "",
     paylorApiUrl: settings.paylor_api_url ?? "https://api.paylorke.com/api/v1",
     paylorChannelId: settings.paylor_channel_id ?? "",
     paylorWebhookSecret: settings.paylor_webhook_secret ?? "",

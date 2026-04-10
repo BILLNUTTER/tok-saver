@@ -320,17 +320,9 @@ router.post("/subscription/verify", requireAuth, async (req, res): Promise<void>
   }
 
   const paylorApiKey = await getSetting("paylor_api_key");
-  const paylorSecretKey = await getSetting("paylor_secret_key");
   const paylorApiUrl = await getSetting("paylor_api_url");
-  if (!paylorApiUrl) {
-    res.json(dbStatus);
-    return;
-  }
 
-  // Secret key is required for status checks (pk_ public key is write-only for STK push).
-  // If not configured, skip the API check — rely on webhook or admin manual activation.
-  if (!paylorSecretKey) {
-    req.log.error({ txId: pendingSub.paylorPaymentId }, "paylor_secret_key not set — skipping status check, use admin Activate button or add secret key");
+  if (!paylorApiKey || !paylorApiUrl) {
     res.json(dbStatus);
     return;
   }
@@ -339,45 +331,34 @@ router.post("/subscription/verify", requireAuth, async (req, res): Promise<void>
   const txId = pendingSub.paylorPaymentId;
   const PAID = new Set(["success", "completed", "paid", "approved", "successful", "complete"]);
 
-  // Use secret key with Bearer auth on both known endpoints.
-  // pk_ (public) key was confirmed to fail on all auth formats — only sk_ works here.
-  type CheckSpec = { url: string; headers: Record<string, string> };
-  const checks: CheckSpec[] = [
-    { url: `${baseUrl}/merchants/transactions/${txId}`, headers: { "Authorization": `Bearer ${paylorSecretKey}`, Accept: "application/json" } },
-    { url: `${baseUrl}/merchants/payments/${txId}`,     headers: { "Authorization": `Bearer ${paylorSecretKey}`, Accept: "application/json" } },
-    // Also try X-Api-Key format in case Paylor uses that for secret keys
-    { url: `${baseUrl}/merchants/transactions/${txId}`, headers: { "X-Api-Key": paylorSecretKey, Accept: "application/json" } },
-  ];
-
-  const results = await Promise.allSettled(
-    checks.map(async ({ url, headers }) => {
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 7000);
-      try {
-        const resp = await fetch(url, { headers, signal: ctrl.signal });
-        clearTimeout(t);
-        const text = await resp.text();
-        req.log.error({ url, httpStatus: resp.status, body: text.slice(0, 800), txId, authType: headers["Authorization"] ?? headers["X-Api-Key"] }, "Paylor status");
-        if (!resp.ok) return null;
-        const data = JSON.parse(text) as Record<string, unknown>;
-        const flat = { ...data, ...(data.data && typeof data.data === "object" ? data.data as Record<string, unknown> : {}) };
-        const txStatus = (flat.status ?? flat.payment_status ?? flat.state ?? "") as string;
-        req.log.error({ txStatus, txId }, "Paylor status parsed");
-        return PAID.has(txStatus.toLowerCase()) ? txStatus : null;
-      } catch (err) {
-        clearTimeout(t);
-        req.log.error({ url, err: String(err) }, "Paylor status error");
-        return null;
+  // Paylor docs: same pk_ key is used for ALL requests (STK push + status checks).
+  // Correct status endpoint: GET /merchants/payments/transactions/:id
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 7000);
+  try {
+    const url = `${baseUrl}/merchants/payments/transactions/${txId}`;
+    const resp = await fetch(url, {
+      headers: { "Authorization": `Bearer ${paylorApiKey}`, "Accept": "application/json" },
+      signal: ctrl.signal,
+    });
+    clearTimeout(t);
+    const text = await resp.text();
+    req.log.error({ url, httpStatus: resp.status, body: text.slice(0, 800), txId }, "Paylor status check");
+    if (resp.ok) {
+      const data = JSON.parse(text) as Record<string, unknown>;
+      const flat = { ...data, ...(data.data && typeof data.data === "object" ? data.data as Record<string, unknown> : {}) };
+      const txStatus = (flat.status ?? flat.payment_status ?? flat.state ?? "") as string;
+      req.log.error({ txStatus, txId }, "Paylor status parsed");
+      if (PAID.has(txStatus.toLowerCase())) {
+        await db.update(subscriptionsTable).set({ status: "active" }).where(eq(subscriptionsTable.id, pendingSub.id));
+        req.log.error({ userId, txId, txStatus }, "Subscription activated via Paylor status check");
+        res.json(await buildSubscriptionStatus(userId));
+        return;
       }
-    })
-  );
-
-  const winner = results.find((r) => r.status === "fulfilled" && r.value !== null);
-  if (winner?.status === "fulfilled" && winner.value) {
-    await db.update(subscriptionsTable).set({ status: "active" }).where(eq(subscriptionsTable.id, pendingSub.id));
-    req.log.error({ userId, txId, txStatus: winner.value }, "Subscription activated via Paylor status check");
-    res.json(await buildSubscriptionStatus(userId));
-    return;
+    }
+  } catch (err) {
+    clearTimeout(t);
+    req.log.error({ txId, err: String(err) }, "Paylor status check error");
   }
 
   res.json(dbStatus);
