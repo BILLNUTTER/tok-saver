@@ -472,18 +472,19 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
     query: { ...queryOptions, queryKey: ['adminSettings', adminKey] }
   });
 
-  const updateSettingsMutation = useAdminUpdateSettings();
-  const upgradeMutation = useAdminUpgradeUser();
-  const suspendMutation = useAdminSuspendUser();
-  const unsuspendMutation = useAdminUnsuspendUser();
-  const deleteMutation = useAdminDeleteUser();
+  const adminRequest = reqOptions.request;
+  const updateSettingsMutation = useAdminUpdateSettings({ request: adminRequest });
+  const upgradeMutation = useAdminUpgradeUser({ request: adminRequest });
+  const suspendMutation = useAdminSuspendUser({ request: adminRequest });
+  const unsuspendMutation = useAdminUnsuspendUser({ request: adminRequest });
+  const deleteMutation = useAdminDeleteUser({ request: adminRequest });
   const { toast } = useToast();
 
   const refetchUsers = () => queryClient.invalidateQueries({ queryKey: ['adminUsers', adminKey] });
 
   function handleUpgrade(userId: number, userName: string) {
     upgradeMutation.mutate(
-      { id: userId, ...reqOptions },
+      { id: userId },
       {
         onSuccess: () => {
           toast({ title: "Upgraded", description: `${userName} has been upgraded to Pro.` });
@@ -496,7 +497,7 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
 
   function handleSuspend(userId: number, userName: string) {
     suspendMutation.mutate(
-      { id: userId, ...reqOptions },
+      { id: userId },
       {
         onSuccess: () => {
           toast({ title: "Suspended", description: `${userName} has been suspended.` });
@@ -509,7 +510,7 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
 
   function handleUnsuspend(userId: number, userName: string) {
     unsuspendMutation.mutate(
-      { id: userId, ...reqOptions },
+      { id: userId },
       {
         onSuccess: () => {
           toast({ title: "Unsuspended", description: `${userName} has been unsuspended.` });
@@ -522,7 +523,7 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
 
   function handleDelete(userId: number, userName: string) {
     deleteMutation.mutate(
-      { id: userId, ...reqOptions },
+      { id: userId },
       {
         onSuccess: () => {
           toast({ title: "Deleted", description: `${userName} has been permanently deleted.` });
@@ -774,7 +775,7 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
                 <Form {...settingsForm}>
                   <form onSubmit={settingsForm.handleSubmit((values) => {
                     updateSettingsMutation.mutate(
-                      { data: values, ...reqOptions },
+                      { data: values },
                       {
                         onSuccess: () => toast({ title: "Settings updated", description: "Changes saved successfully" }),
                         onError: (e: unknown) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(e, "Failed to update settings") })
