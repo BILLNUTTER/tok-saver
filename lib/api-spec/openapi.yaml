@@ -533,15 +533,12 @@ components:
       properties:
         paymentUrl:
           type: string
-        reference:
-          type: string
         amount:
           type: number
         currency:
           type: string
       required:
         - paymentUrl
-        - reference
         - amount
         - currency
 

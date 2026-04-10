@@ -8,7 +8,6 @@
 
 export interface PaymentInitResponse {
   paymentUrl: string;
-  reference: string;
   amount: number;
   currency: string;
 }

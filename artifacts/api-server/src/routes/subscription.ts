@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { randomUUID } from "crypto";
 import { db, subscriptionsTable, downloadsTable, usersTable } from "@workspace/db";
 import { eq, and, gt, count } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
@@ -63,10 +64,13 @@ router.post("/subscription/subscribe", requireAuth, async (req, res): Promise<vo
 
   const reference = `TKT-${userId}-${Date.now()}`;
 
-  // Store a pending subscription record before contacting the gateway.
-  // The callback handler will only activate subscriptions that have a
-  // matching pending record, preventing unauthenticated callers from
-  // manufacturing fake successful callbacks.
+  // Generate a one-time secret token that is embedded in our callback URL.
+  // The token is never exposed to the user — only Paylor receives it via the
+  // callback_url parameter.  The callback handler requires both a matching
+  // reference AND this token, so a user who learns their own `reference` still
+  // cannot self-activate because they never see the token.
+  const callbackToken = randomUUID();
+
   const expiresAt = new Date();
   expiresAt.setMonth(expiresAt.getMonth() + 1);
 
@@ -76,11 +80,17 @@ router.post("/subscription/subscribe", requireAuth, async (req, res): Promise<vo
     amountPaid: String(amount),
     currency,
     paymentReference: reference,
+    callbackToken,
     expiresAt,
   });
 
   try {
-    const callbackUrl = `${process.env.APP_URL ?? ""}/api/subscription/callback`;
+    const appUrl = process.env.APP_URL ?? "";
+    // The secret token is embedded in the callback URL, not the body.
+    // Paylor will POST back to this URL; the user is only redirected to
+    // paymentUrl and never sees the token.
+    const callbackUrl = `${appUrl}/api/subscription/callback?token=${callbackToken}`;
+
     const paymentPayload = {
       amount,
       currency,
@@ -115,9 +125,10 @@ router.post("/subscription/subscribe", requireAuth, async (req, res): Promise<vo
 
     const paymentUrl = paylorData.payment_url ?? paylorData.url ?? "";
 
+    // Do NOT expose reference or callbackToken to the client.
+    // The user is redirected to paymentUrl only; Paylor holds the callback URL.
     res.json({
       paymentUrl,
-      reference,
       amount,
       currency,
     });
@@ -135,27 +146,37 @@ router.post("/subscription/callback", async (req, res): Promise<void> => {
   }
   const { reference, status, amount } = parsed.data;
 
-  req.log.info({ reference, status, amount }, "Paylor callback received");
+  // The callbackToken is embedded in the URL, not the body, so the user
+  // cannot forge it even if they know their own payment reference.
+  const callbackToken = typeof req.query.token === "string" ? req.query.token : null;
+
+  req.log.info({ reference, status, amount, hasToken: !!callbackToken }, "Paylor callback received");
+
+  if (!callbackToken) {
+    req.log.warn({ reference }, "Callback received without token");
+    res.status(400).json({ error: "Missing callback token" });
+    return;
+  }
 
   const SUCCESSFUL_STATUSES = new Set(["success", "completed", "paid"]);
 
   if (SUCCESSFUL_STATUSES.has(status)) {
-    // Only activate subscriptions that were explicitly created as pending.
-    // This prevents an attacker from crafting a fake reference and gaining
-    // a subscription without payment.
+    // Only activate subscriptions where both the reference AND the secret
+    // callbackToken match, ensuring Paylor (not the user) triggered this.
     const [pendingSub] = await db
       .select()
       .from(subscriptionsTable)
       .where(
         and(
           eq(subscriptionsTable.paymentReference, reference),
+          eq(subscriptionsTable.callbackToken, callbackToken),
           eq(subscriptionsTable.status, "pending")
         )
       );
 
     if (!pendingSub) {
-      req.log.warn({ reference }, "Callback received for unknown or already-processed reference");
-      res.status(400).json({ error: "Unknown or already processed payment reference" });
+      req.log.warn({ reference }, "Callback received for unknown, token-mismatched, or already-processed reference");
+      res.status(400).json({ error: "Invalid or already processed payment" });
       return;
     }
 

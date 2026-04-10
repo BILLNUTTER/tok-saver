@@ -117,7 +117,6 @@ export const GetSubscriptionStatusResponse = zod.object({
  */
 export const InitiateSubscriptionResponse = zod.object({
   paymentUrl: zod.string(),
-  reference: zod.string(),
   amount: zod.number(),
   currency: zod.string(),
 });
