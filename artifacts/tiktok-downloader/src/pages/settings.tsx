@@ -339,7 +339,7 @@ export default function Settings() {
             <div>
               <p className="font-medium text-sm">Need help?</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Contact admin for billing issues, account problems, or questions.
+                Contact support for billing issues, account problems, or questions.
               </p>
               <a
                 href="mailto:nutterxtech@gmail.com"

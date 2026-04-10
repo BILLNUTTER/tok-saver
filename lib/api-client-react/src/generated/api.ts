@@ -1686,6 +1686,91 @@ export const useAdminDeleteUser = <
 };
 
 /**
+ * Deletes a subscription record, reverting the user to free status. Use to undo accidental activations.
+ * @summary Remove a subscription record
+ */
+export const getAdminRemovePaymentUrl = (id: number) => {
+  return `/api/admin/payments/${id}/remove`;
+};
+
+export const adminRemovePayment = async (
+  id: number,
+  options?: RequestInit,
+): Promise<MessageResponse> => {
+  return customFetch<MessageResponse>(getAdminRemovePaymentUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getAdminRemovePaymentMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminRemovePayment>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminRemovePayment>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["adminRemovePayment"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminRemovePayment>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return adminRemovePayment(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminRemovePaymentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminRemovePayment>>
+>;
+
+export type AdminRemovePaymentMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Remove a subscription record
+ */
+export const useAdminRemovePayment = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminRemovePayment>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof adminRemovePayment>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getAdminRemovePaymentMutationOptions(options));
+};
+
+/**
  * Marks a pending subscription as active. Use when the payment gateway callback fails to activate automatically.
  * @summary Manually activate a pending payment
  */

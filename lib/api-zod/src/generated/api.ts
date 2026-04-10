@@ -338,6 +338,22 @@ export const AdminDeleteUserResponse = zod.object({
 });
 
 /**
+ * Deletes a subscription record, reverting the user to free status. Use to undo accidental activations.
+ * @summary Remove a subscription record
+ */
+export const AdminRemovePaymentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AdminRemovePaymentHeader = zod.object({
+  "x-admin-key": zod.string(),
+});
+
+export const AdminRemovePaymentResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
  * Marks a pending subscription as active. Use when the payment gateway callback fails to activate automatically.
  * @summary Manually activate a pending payment
  */

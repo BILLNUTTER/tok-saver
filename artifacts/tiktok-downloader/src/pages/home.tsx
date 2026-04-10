@@ -21,6 +21,7 @@ import {
   useAdminDeleteUser,
   useAdminGetPayments,
   useAdminActivatePayment,
+  useAdminRemovePayment,
   useGetSubscriptionStatus
 } from "@workspace/api-client-react";
 import { ApiError, getApiErrorMessage } from "@/lib/api-error";
@@ -499,6 +500,7 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
   const unsuspendMutation = useAdminUnsuspendUser({ request: adminRequest });
   const deleteMutation = useAdminDeleteUser({ request: adminRequest });
   const activatePaymentMutation = useAdminActivatePayment({ request: adminRequest });
+  const removePaymentMutation = useAdminRemovePayment({ request: adminRequest });
   const { toast } = useToast();
 
   const refetchUsers = () => queryClient.invalidateQueries({ queryKey: ['adminUsers', adminKey] });
@@ -510,6 +512,20 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
       {
         onSuccess: () => {
           toast({ title: "Activated", description: `Subscription for ${userName} has been activated.` });
+          refetchPayments();
+          refetchUsers();
+        },
+        onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+      }
+    );
+  }
+
+  function handleRemovePayment(subId: number, userName: string) {
+    removePaymentMutation.mutate(
+      { id: subId },
+      {
+        onSuccess: () => {
+          toast({ title: "Removed", description: `Subscription for ${userName} has been removed.` });
           refetchPayments();
           refetchUsers();
         },
@@ -869,22 +885,55 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
                             {new Date(p.expiresAt).toLocaleDateString()}
                           </TableCell>
                           <TableCell className="text-right">
-                            {p.status === "pending" && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-primary border-primary/30 hover:bg-primary/10 whitespace-nowrap"
-                                onClick={() => handleActivatePayment(p.id, p.userName)}
-                                disabled={activatePaymentMutation.isPending}
-                                data-testid={`btn-activate-payment-${p.id}`}
-                              >
-                                {activatePaymentMutation.isPending ? (
-                                  <Loader2 className="w-3 h-3 animate-spin" />
-                                ) : (
-                                  <><CheckCircle2 className="w-3 h-3 mr-1" /> Activate</>
-                                )}
-                              </Button>
-                            )}
+                            <div className="flex gap-1.5 justify-end">
+                              {p.status === "pending" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-primary border-primary/30 hover:bg-primary/10 whitespace-nowrap"
+                                  onClick={() => handleActivatePayment(p.id, p.userName)}
+                                  disabled={activatePaymentMutation.isPending || removePaymentMutation.isPending}
+                                  data-testid={`btn-activate-payment-${p.id}`}
+                                >
+                                  {activatePaymentMutation.isPending ? (
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                  ) : (
+                                    <><CheckCircle2 className="w-3 h-3 mr-1" /> Activate</>
+                                  )}
+                                </Button>
+                              )}
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-destructive border-destructive/30 hover:bg-destructive/10 whitespace-nowrap"
+                                    disabled={removePaymentMutation.isPending}
+                                    data-testid={`btn-remove-payment-${p.id}`}
+                                  >
+                                    <Trash2 className="w-3 h-3 mr-1" /> Remove
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent className="dark bg-card border-border">
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Remove subscription?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This will permanently remove <strong>{p.userName}</strong>'s subscription record.
+                                      They will lose Pro access immediately. This cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      onClick={() => handleRemovePayment(p.id, p.userName)}
+                                    >
+                                      Remove
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
