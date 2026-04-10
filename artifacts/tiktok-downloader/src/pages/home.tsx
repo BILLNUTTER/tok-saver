@@ -4,16 +4,16 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { 
-  useDownloadVideo, 
-  useGetDownloadHistory, 
-  useAdminGetStats, 
-  useAdminGetUsers, 
-  useAdminGetSettings, 
+import {
+  useDownloadVideo,
+  useGetDownloadHistory,
+  useAdminGetStats,
+  useAdminGetUsers,
+  useAdminGetSettings,
   useAdminUpdateSettings,
   useAdminUpgradeUser,
   useAdminSuspendUser,
@@ -26,7 +26,12 @@ import {
 } from "@workspace/api-client-react";
 import { ApiError, getApiErrorMessage } from "@/lib/api-error";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Download, History, Settings, Users, BarChart3, Lock, CheckCircle2, AlertCircle, ShieldOff, ShieldCheck, Trash2, ArrowUpCircle, HardDriveDownload, Copy, TriangleAlert, ExternalLink, CreditCard, Clock } from "lucide-react";
+import {
+  Loader2, Download, History, Settings, Users, BarChart3, Lock,
+  CheckCircle2, AlertCircle, ShieldOff, ShieldCheck, Trash2, ArrowUpCircle,
+  HardDriveDownload, ExternalLink, CreditCard, Clock, Zap, Star,
+  Mail, Phone, MessageSquare, TrendingUp, Shield, Globe
+} from "lucide-react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -45,20 +50,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-// --- URL Input Form Schema ---
 const downloadSchema = z.object({
   url: z.string().url("Please enter a valid URL").regex(
-    /tiktok\.com|vm\.tiktok\.com|instagram\.com|instagr\.am|facebook\.com|fb\.watch|fb\.com/i,
-    "Please enter a TikTok, Instagram, or Facebook video link"
+    /tiktok\.com|vm\.tiktok\.com|facebook\.com|fb\.watch|fb\.com/i,
+    "Please enter a TikTok or Facebook video link"
   ),
 });
 
-// --- Admin Key Form Schema ---
 const adminKeySchema = z.object({
   key: z.string().min(1, "Admin key is required"),
 });
 
-// --- Admin Settings Form Schema ---
 const settingsSchema = z.object({
   subscriptionPrice: z.coerce.number().min(0),
   weeklyPrice: z.coerce.number().min(0),
@@ -70,95 +72,315 @@ const settingsSchema = z.object({
   appUrl: z.string(),
   adminKey: z.string().min(1),
   freeDownloadsPerUser: z.coerce.number().min(0),
-  instagramSessionId: z.string(),
 });
 
 export default function Home() {
   const { user, isLoading } = useAuth();
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
   const searchParams = new URLSearchParams(window.location.search);
   const isAdmin = searchParams.get("admin") === "true";
-  
+
   if (isLoading) {
-    return <div className="flex justify-center items-center h-full min-h-[50vh]"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+    return (
+      <div className="flex justify-center items-center h-full min-h-[50vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
-  if (isAdmin) {
-    return <AdminDashboard />;
-  }
-
-  if (!user) {
-    return <Landing />;
-  }
-
+  if (isAdmin) return <AdminDashboard />;
+  if (!user) return <Landing />;
   return <DownloadInterface />;
 }
 
 function Landing() {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-4 text-center max-w-3xl mx-auto space-y-8 min-h-[70vh]">
-      <div className="space-y-4">
-        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
-          Download Videos <br className="hidden md:block" />
-          <span className="text-primary">Without Watermarks</span>
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-          TikTok, Instagram & Facebook — high-quality, watermark-free downloads. Register now to get your first download absolutely free.
-        </p>
-      </div>
-      
-      <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-        <Link href="/register">
-          <Button size="lg" className="w-full sm:w-auto text-lg px-8" data-testid="button-landing-register">
-            Get Started Free
-          </Button>
-        </Link>
-        <Link href="/login">
-          <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8" data-testid="button-landing-login">
-            Login
-          </Button>
-        </Link>
-      </div>
+    <div className="flex flex-col">
+      {/* Hero */}
+      <section className="relative overflow-hidden py-20 px-4">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -mr-48 -mt-48 pointer-events-none" />
+        <div className="relative container mx-auto max-w-4xl text-center space-y-8">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Badge variant="outline" className="border-primary/40 text-primary px-3 py-1 text-sm font-medium">
+              🎬 Free First Download — No Credit Card Needed
+            </Badge>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
+            Download TikTok & Facebook<br />
+            <span className="text-primary">Videos Without Watermarks</span>
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Get high-quality, watermark-free videos in seconds. Just paste the link — we handle the rest.
+            Your first download is completely free.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+            <Link href="/register">
+              <Button size="lg" className="w-full sm:w-auto text-base px-10 h-12 font-semibold" data-testid="button-landing-register">
+                Get Started Free
+              </Button>
+            </Link>
+            <Link href="/login">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto text-base px-10 h-12" data-testid="button-landing-login">
+                Sign In
+              </Button>
+            </Link>
+          </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full pt-12">
-        <Card className="bg-card/50 border-none shadow-none text-center p-6">
-          <Download className="w-10 h-10 mx-auto text-primary mb-4" />
-          <h3 className="font-bold text-lg mb-2">Fast & Easy</h3>
-          <p className="text-muted-foreground text-sm">Just paste the link and download instantly.</p>
-        </Card>
-        <Card className="bg-card/50 border-none shadow-none text-center p-6">
-          <CheckCircle2 className="w-10 h-10 mx-auto text-primary mb-4" />
-          <h3 className="font-bold text-lg mb-2">No Watermarks</h3>
-          <p className="text-muted-foreground text-sm">Clean videos ready for repurposing or sharing.</p>
-        </Card>
-        <Card className="bg-card/50 border-none shadow-none text-center p-6">
-          <Lock className="w-10 h-10 mx-auto text-primary mb-4" />
-          <h3 className="font-bold text-lg mb-2">Secure</h3>
-          <p className="text-muted-foreground text-sm">Safe, secure, and private downloads.</p>
-        </Card>
-      </div>
+          {/* Platform badges */}
+          <div className="flex items-center justify-center gap-4 pt-4 text-sm text-muted-foreground">
+            <span className="font-medium text-foreground/70">Supports:</span>
+            <div className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-1.5">
+              <span className="font-semibold">TikTok</span>
+            </div>
+            <div className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-1.5">
+              <span className="font-semibold">Facebook</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-16 px-4 bg-card/30">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight mb-3">How It Works</h2>
+            <p className="text-muted-foreground">Three simple steps to download any video</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                step: "1",
+                icon: <Globe className="w-6 h-6 text-primary" />,
+                title: "Copy the Link",
+                desc: "Open TikTok or Facebook, find the video you want, and copy its link or URL.",
+              },
+              {
+                step: "2",
+                icon: <Download className="w-6 h-6 text-primary" />,
+                title: "Paste & Process",
+                desc: "Paste the link into TokSaver. We'll instantly fetch the watermark-free version.",
+              },
+              {
+                step: "3",
+                icon: <HardDriveDownload className="w-6 h-6 text-primary" />,
+                title: "Save to Device",
+                desc: "Tap 'Save to Device' and the clean video downloads directly to your phone or computer.",
+              },
+            ].map((item) => (
+              <div key={item.step} className="relative text-center">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  {item.icon}
+                </div>
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                  {item.step}
+                </div>
+                <h3 className="font-bold text-lg mb-2">{item.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight mb-3">Why Choose TokSaver?</h2>
+            <p className="text-muted-foreground">Everything you need, nothing you don't</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                icon: <Zap className="w-5 h-5 text-primary" />,
+                title: "Lightning Fast",
+                desc: "Downloads processed in seconds — no waiting, no queues.",
+              },
+              {
+                icon: <CheckCircle2 className="w-5 h-5 text-primary" />,
+                title: "No Watermarks",
+                desc: "Get perfectly clean videos ready to share anywhere.",
+              },
+              {
+                icon: <Shield className="w-5 h-5 text-primary" />,
+                title: "Safe & Private",
+                desc: "Your downloads are private. We never store your videos.",
+              },
+              {
+                icon: <Star className="w-5 h-5 text-primary" />,
+                title: "Best Quality",
+                desc: "Original resolution — HD quality every time.",
+              },
+              {
+                icon: <Phone className="w-5 h-5 text-primary" />,
+                title: "Works on Mobile",
+                desc: "Fully optimized for Android and iPhone browsers.",
+              },
+              {
+                icon: <TrendingUp className="w-5 h-5 text-primary" />,
+                title: "Unlimited Pro",
+                desc: "Subscribe for unlimited downloads at just KSH 19/week.",
+              },
+            ].map((f, i) => (
+              <Card key={i} className="bg-card/50 border-border/60 hover:border-primary/30 transition-colors">
+                <CardContent className="pt-6 pb-5">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
+                    {f.icon}
+                  </div>
+                  <h3 className="font-semibold mb-1">{f.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="py-16 px-4 bg-card/30">
+        <div className="container mx-auto max-w-3xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight mb-3">Simple, Affordable Pricing</h2>
+            <p className="text-muted-foreground">Start free. Upgrade when you need more.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            {/* Free */}
+            <Card className="border-border/60">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Free</CardTitle>
+                <CardDescription>Try before you commit</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="text-3xl font-black">KSH 0</div>
+                <ul className="space-y-2 text-sm">
+                  {["1 free download", "Watermark-free quality", "TikTok & Facebook"].map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-muted-foreground">
+                      <CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Link href="/register" className="w-full">
+                  <Button variant="outline" className="w-full">Get Started</Button>
+                </Link>
+              </CardFooter>
+            </Card>
+
+            {/* Weekly — highlighted */}
+            <Card className="border-primary shadow-lg shadow-primary/10 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <Badge className="bg-primary text-primary-foreground px-3 font-semibold">Most Popular</Badge>
+              </div>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Weekly Pro</CardTitle>
+                <CardDescription>Great for regular users</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <span className="text-3xl font-black text-primary">KSH 19</span>
+                  <span className="text-muted-foreground text-sm">/week</span>
+                </div>
+                <ul className="space-y-2 text-sm">
+                  {["Unlimited downloads", "Highest quality", "TikTok & Facebook", "Download history", "M-Pesa payment"].map((f) => (
+                    <li key={f} className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Link href="/register" className="w-full">
+                  <Button className="w-full font-semibold">Subscribe Weekly</Button>
+                </Link>
+              </CardFooter>
+            </Card>
+
+            {/* Monthly */}
+            <Card className="border-border/60">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Monthly Pro</CardTitle>
+                <CardDescription>Best value</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <span className="text-3xl font-black">KSH 49</span>
+                  <span className="text-muted-foreground text-sm">/month</span>
+                </div>
+                <ul className="space-y-2 text-sm">
+                  {["Unlimited downloads", "Highest quality", "TikTok & Facebook", "Download history", "M-Pesa payment"].map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-muted-foreground">
+                      <CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Link href="/register" className="w-full">
+                  <Button variant="outline" className="w-full">Subscribe Monthly</Button>
+                </Link>
+              </CardFooter>
+            </Card>
+          </div>
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            All plans paid via <strong>M-Pesa</strong> — instant activation after payment.
+          </p>
+        </div>
+      </section>
+
+      {/* Contact / Support */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-2xl text-center">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+            <MessageSquare className="w-7 h-7 text-primary" />
+          </div>
+          <h2 className="text-3xl font-bold tracking-tight mb-3">Need Help?</h2>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            Having trouble with a download? Payment not going through? Our support team is ready to help you.
+          </p>
+          <a
+            href="mailto:nutterxtech@gmail.com"
+            className="inline-flex items-center gap-2 bg-card border border-border hover:border-primary/40 transition-colors rounded-xl px-6 py-3 font-semibold text-foreground"
+          >
+            <Mail className="w-4 h-4 text-primary" />
+            nutterxtech@gmail.com
+          </a>
+          <p className="text-xs text-muted-foreground mt-4">We typically respond within a few hours</p>
+        </div>
+      </section>
+
+      {/* Bottom CTA */}
+      <section className="py-16 px-4 bg-primary/5 border-t border-primary/10">
+        <div className="container mx-auto max-w-xl text-center space-y-6">
+          <h2 className="text-3xl font-bold tracking-tight">Ready to Start?</h2>
+          <p className="text-muted-foreground">Create your free account and download your first video right now.</p>
+          <Link href="/register">
+            <Button size="lg" className="px-12 h-12 text-base font-semibold">
+              Create Free Account
+            </Button>
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
 
 function DownloadInterface() {
   const { toast } = useToast();
-  const [_, setLocation] = useLocation();
-  const [downloadResult, setDownloadResult] = useState<{url: string, title?: string | null, thumbnail?: string | null, sourceUrl?: string} | null>(null);
+  const [, setLocation] = useLocation();
+  const [downloadResult, setDownloadResult] = useState<{ url: string; title?: string | null; thumbnail?: string | null; sourceUrl?: string } | null>(null);
   const [saveProgress, setSaveProgress] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const { data: subStatus, refetch: refetchSubStatus } = useGetSubscriptionStatus();
   const { data: history, refetch: refetchHistory } = useGetDownloadHistory();
-  
   const downloadMutation = useDownloadVideo();
 
   function saveVideoToDevice(videoUrl: string, title?: string | null, sourceUrl?: string) {
     const token = localStorage.getItem("auth_token");
     const apiBase = (import.meta.env.VITE_API_URL as string | undefined) || "";
-    const defaultName = sourceUrl?.includes("instagram") ? "instagram-video"
-      : sourceUrl?.includes("facebook") || sourceUrl?.includes("fb.") ? "facebook-video"
-      : "tiktok-video";
+    const defaultName = sourceUrl?.includes("facebook") || sourceUrl?.includes("fb.") ? "facebook-video" : "tiktok-video";
     const safeFilename = (title || defaultName)
       .replace(/[^a-zA-Z0-9_\-\s]/g, "")
       .trim()
@@ -172,15 +394,12 @@ function DownloadInterface() {
     const xhr = new XMLHttpRequest();
     xhr.open("GET", proxyUrl, true);
     xhr.responseType = "blob";
-    if (token) {
-      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-    }
+    if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
 
     xhr.onprogress = (event) => {
       if (event.lengthComputable && event.total > 0) {
         setSaveProgress(Math.round((event.loaded / event.total) * 100));
       } else {
-        // Indeterminate — pulse at a slow crawl so it looks alive
         setSaveProgress((prev) => (prev !== null && prev < 90 ? prev + 1 : prev ?? 10));
       }
     };
@@ -200,7 +419,7 @@ function DownloadInterface() {
         setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
         toast({ title: "Saved!", description: "Video saved to your device." });
       } else {
-        toast({ variant: "destructive", title: "Save failed", description: "Could not download the video file. Try again." });
+        toast({ variant: "destructive", title: "Save failed", description: "Could not download the video. Try again." });
       }
     };
 
@@ -224,83 +443,66 @@ function DownloadInterface() {
       { data: { url: values.url } },
       {
         onSuccess: (data) => {
-          setDownloadResult({
-            url: data.downloadUrl,
-            title: data.title,
-            thumbnail: data.thumbnailUrl,
-            sourceUrl: values.url,
-          });
-          toast({
-            title: "Success",
-            description: "Video downloaded successfully",
-          });
+          setDownloadResult({ url: data.downloadUrl, title: data.title, thumbnail: data.thumbnailUrl, sourceUrl: values.url });
+          toast({ title: "Video ready!", description: "Tap 'Save to Device' to download." });
           form.reset();
           refetchHistory();
           refetchSubStatus();
         },
         onError: (error: unknown) => {
           if (error instanceof ApiError && error.status === 402) {
-             toast({
-               variant: "destructive",
-               title: "Subscription Required",
-               description: getApiErrorMessage(error, "You have used your free downloads."),
-             });
-             setLocation("/subscribe");
+            toast({ variant: "destructive", title: "Subscription Required", description: getApiErrorMessage(error, "You have used your free downloads.") });
+            setLocation("/subscribe");
           } else {
-            toast({
-              variant: "destructive",
-              title: "Error",
-              description: getApiErrorMessage(error, "Failed to download video"),
-            });
+            toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(error, "Failed to process video") });
           }
         },
       }
     );
   }
 
+  const isPro = subStatus?.isActive && subStatus.expiresAt;
+  const daysLeft = isPro ? Math.max(0, Math.ceil((new Date(subStatus!.expiresAt as string).getTime() - Date.now()) / 86400000)) : 0;
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl space-y-8">
-      
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card border border-border p-6 rounded-xl shadow-sm">
+    <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
+
+      {/* Status Banner */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card border border-border p-5 rounded-xl">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Download Video</h2>
-          <p className="text-muted-foreground mt-1">Paste a TikTok, Instagram, or Facebook video link to get the watermark-free video.</p>
+          <h2 className="text-xl font-bold">Download Video</h2>
+          <p className="text-muted-foreground text-sm mt-0.5">Paste a TikTok or Facebook video link below</p>
         </div>
-        
         {subStatus && (
-          <div className="text-right">
-            {subStatus.isActive && subStatus.expiresAt ? (() => {
-              const daysLeft = Math.max(0, Math.ceil((new Date(subStatus.expiresAt as string).getTime() - Date.now()) / 86400000));
-              return (
-                <div className="flex flex-col items-end gap-1">
-                  <Badge variant="default" className="bg-primary/20 text-primary hover:bg-primary/30 text-sm px-3 py-1">
-                    Pro · {daysLeft}d left
-                  </Badge>
-                  {daysLeft <= 7 && (
-                    <Link href="/subscribe">
-                      <Button variant="ghost" size="sm" className="text-xs text-amber-400 h-auto p-0 hover:text-amber-300">
-                        Renew now →
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              );
-            })() : !subStatus.isActive ? (
-              <div className="flex flex-col items-end">
-                <Badge variant="outline" className="text-sm px-3 py-1 mb-2">
-                  {subStatus.remainingFreeDownloads} Free Downloads Left
-                </Badge>
+          isPro ? (
+            <div className="flex items-center gap-3">
+              <Badge className="bg-primary/15 text-primary border-primary/30 font-semibold px-3 py-1">
+                <Star className="w-3 h-3 mr-1.5" /> Pro · {daysLeft}d left
+              </Badge>
+              {daysLeft <= 7 && (
                 <Link href="/subscribe">
-                  <Button variant="secondary" size="sm" className="text-xs" data-testid="button-upgrade-now">
-                    Upgrade Now
+                  <Button variant="ghost" size="sm" className="text-xs text-amber-400 hover:text-amber-300 h-auto p-0">
+                    Renew →
                   </Button>
                 </Link>
-              </div>
-            ) : null}
-          </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className="font-medium px-3 py-1">
+                {subStatus.remainingFreeDownloads} free download{subStatus.remainingFreeDownloads !== 1 ? "s" : ""} left
+              </Badge>
+              <Link href="/subscribe">
+                <Button size="sm" className="font-semibold" data-testid="button-upgrade-now">
+                  Upgrade to Pro
+                </Button>
+              </Link>
+            </div>
+          )
         )}
       </div>
 
+      {/* URL Input Card */}
       <Card className="border-primary/20 shadow-lg shadow-primary/5">
         <CardContent className="pt-6">
           <Form {...form}>
@@ -310,22 +512,19 @@ function DownloadInterface() {
                 name="url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Video URL</FormLabel>
+                    <FormLabel className="text-sm font-medium">Video URL</FormLabel>
                     <FormControl>
                       <div className="flex gap-2">
-                        <Input 
-                          placeholder="https://www.tiktok.com/... or instagram.com/reel/... or facebook.com/..."
-                          {...field} 
-                          className="flex-1 bg-background"
+                        <Input
+                          placeholder="https://www.tiktok.com/... or facebook.com/..."
+                          {...field}
+                          className="flex-1 bg-background h-11"
                           data-testid="input-tiktok-url"
                         />
-                        <Button 
-                          type="submit" 
-                          disabled={downloadMutation.isPending}
-                          data-testid="button-download"
-                        >
-                          {downloadMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Download className="w-4 h-4 mr-2" />}
-                          Download
+                        <Button type="submit" disabled={downloadMutation.isPending} className="h-11 px-5" data-testid="button-download">
+                          {downloadMutation.isPending
+                            ? <Loader2 className="w-4 h-4 animate-spin" />
+                            : <><Download className="w-4 h-4 mr-2" />Download</>}
                         </Button>
                       </div>
                     </FormControl>
@@ -336,26 +535,35 @@ function DownloadInterface() {
             </form>
           </Form>
 
+          {/* Supported platforms hint */}
+          <div className="flex items-center gap-3 mt-4 text-xs text-muted-foreground">
+            <span>Works with:</span>
+            <span className="bg-muted rounded-full px-2.5 py-0.5 font-medium">TikTok</span>
+            <span className="bg-muted rounded-full px-2.5 py-0.5 font-medium">Facebook</span>
+          </div>
+
+          {/* Result */}
           {downloadResult && (
-            <div className="mt-8 p-4 border border-border rounded-lg bg-background/50 flex flex-col sm:flex-row gap-6 items-center">
+            <div className="mt-6 p-4 border border-primary/20 rounded-xl bg-primary/5 flex flex-col sm:flex-row gap-5 items-center">
               {downloadResult.thumbnail ? (
-                <div className="w-32 h-40 bg-muted rounded-md overflow-hidden shrink-0">
+                <div className="w-28 h-36 bg-muted rounded-lg overflow-hidden shrink-0">
                   <img src={downloadResult.thumbnail} alt="Thumbnail" className="w-full h-full object-cover" />
                 </div>
               ) : (
-                <div className="w-32 h-40 bg-muted rounded-md flex items-center justify-center shrink-0">
+                <div className="w-28 h-36 bg-muted rounded-lg flex items-center justify-center shrink-0">
                   <Download className="w-8 h-8 text-muted-foreground" />
                 </div>
               )}
-              
               <div className="flex-1 flex flex-col justify-center space-y-4 w-full">
-                <h4 className="font-semibold line-clamp-2">{downloadResult.title || "Video Ready"}</h4>
-
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Ready to download</p>
+                  <h4 className="font-semibold line-clamp-2">{downloadResult.title || "Video Ready"}</h4>
+                </div>
                 {isSaving ? (
                   <div className="space-y-2 w-full sm:max-w-xs">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Saving to device{saveProgress !== null ? ` — ${saveProgress}%` : "…"}</span>
+                      <span>Saving{saveProgress !== null ? ` — ${saveProgress}%` : "…"}</span>
                     </div>
                     <Progress value={saveProgress ?? 0} className="h-2" />
                   </div>
@@ -365,8 +573,7 @@ function DownloadInterface() {
                     onClick={() => saveVideoToDevice(downloadResult.url, downloadResult.title, downloadResult.sourceUrl)}
                     data-testid="link-save-video"
                   >
-                    <HardDriveDownload className="w-4 h-4 mr-2" />
-                    Save to Device
+                    <HardDriveDownload className="w-4 h-4 mr-2" /> Save to Device
                   </Button>
                 )}
               </div>
@@ -375,37 +582,37 @@ function DownloadInterface() {
         </CardContent>
       </Card>
 
-      <div className="space-y-4 pt-8">
-        <h3 className="text-xl font-bold flex items-center gap-2">
-          <History className="w-5 h-5 text-primary" /> 
-          Recent Downloads
+      {/* Download History */}
+      <div className="space-y-3">
+        <h3 className="text-lg font-bold flex items-center gap-2">
+          <History className="w-5 h-5 text-primary" /> Recent Downloads
         </h3>
-        
         {!history || history.length === 0 ? (
           <Card className="bg-card/30 border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <History className="w-12 h-12 mb-4 opacity-20" />
-              <p>No downloads yet.</p>
+              <History className="w-10 h-10 mb-3 opacity-20" />
+              <p className="text-sm">No downloads yet — paste a link above to get started.</p>
             </CardContent>
           </Card>
         ) : (
-          <div className="rounded-md border border-border overflow-hidden">
+          <div className="rounded-xl border border-border overflow-hidden">
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
-                  <TableHead>URL</TableHead>
-                  <TableHead className="w-[200px]">Date</TableHead>
+                  <TableHead>Video Link</TableHead>
+                  <TableHead className="w-[180px]">Date & Time</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {history.map((record) => (
                   <TableRow key={record.id}>
-                    <TableCell className="font-mono text-sm truncate max-w-[200px] sm:max-w-md">
-                      <a href={record.url} target="_blank" rel="noreferrer" className="hover:text-primary hover:underline">
+                    <TableCell className="font-mono text-xs truncate max-w-[200px] sm:max-w-md">
+                      <a href={record.url} target="_blank" rel="noreferrer" className="hover:text-primary hover:underline flex items-center gap-1">
                         {record.url}
+                        <ExternalLink className="w-3 h-3 shrink-0 opacity-50" />
                       </a>
                     </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
+                    <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
                       {new Date(record.downloadedAt).toLocaleDateString()} {new Date(record.downloadedAt).toLocaleTimeString()}
                     </TableCell>
                   </TableRow>
@@ -416,6 +623,13 @@ function DownloadInterface() {
         )}
       </div>
 
+      {/* Support link */}
+      <div className="flex items-center gap-3 p-4 bg-card/30 border border-dashed border-border rounded-xl text-sm text-muted-foreground">
+        <Mail className="w-4 h-4 text-primary shrink-0" />
+        <span>Need help? Contact us at{" "}
+          <a href="mailto:nutterxtech@gmail.com" className="text-primary hover:underline font-medium">nutterxtech@gmail.com</a>
+        </span>
+      </div>
     </div>
   );
 }
@@ -439,12 +653,13 @@ function AdminDashboard() {
   if (!isAuthenticated) {
     return (
       <div className="flex-1 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lock className="w-5 h-5 text-primary" /> Admin Access
-            </CardTitle>
-            <CardDescription>Enter the admin key to access the dashboard.</CardDescription>
+        <Card className="w-full max-w-sm shadow-xl border-primary/20">
+          <CardHeader className="text-center pb-4">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+              <Lock className="w-7 h-7 text-primary" />
+            </div>
+            <CardTitle className="text-xl">Admin Access</CardTitle>
+            <CardDescription>Enter your admin key to access the dashboard</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...keyForm}>
@@ -456,7 +671,7 @@ function AdminDashboard() {
                     <FormItem>
                       <FormLabel>Admin Key</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} data-testid="input-admin-key" />
+                        <Input type="password" placeholder="Enter admin key" {...field} data-testid="input-admin-key" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -479,29 +694,23 @@ function AdminDashboard() {
   }} />;
 }
 
-function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => void }) {
-  const reqOptions = { request: { headers: { 'x-admin-key': adminKey } } };
+function AdminPanel({ adminKey, onLogout }: { adminKey: string; onLogout: () => void }) {
+  const reqOptions = { request: { headers: { "x-admin-key": adminKey } } };
   const queryOptions = { enabled: !!adminKey, retry: false };
   const queryClient = useQueryClient();
-  
+  const { toast } = useToast();
+
   const { data: stats, isLoading: statsLoading, error: statsError } = useAdminGetStats({
-    ...reqOptions,
-    query: { ...queryOptions, queryKey: ['adminStats', adminKey] }
+    ...reqOptions, query: { ...queryOptions, queryKey: ["adminStats", adminKey] }
   });
-  
   const { data: users, isLoading: usersLoading } = useAdminGetUsers({
-    ...reqOptions,
-    query: { ...queryOptions, queryKey: ['adminUsers', adminKey] }
+    ...reqOptions, query: { ...queryOptions, queryKey: ["adminUsers", adminKey] }
   });
-
   const { data: settings, isLoading: settingsLoading } = useAdminGetSettings({
-    ...reqOptions,
-    query: { ...queryOptions, queryKey: ['adminSettings', adminKey] }
+    ...reqOptions, query: { ...queryOptions, queryKey: ["adminSettings", adminKey] }
   });
-
   const { data: payments, isLoading: paymentsLoading } = useAdminGetPayments({
-    ...reqOptions,
-    query: { ...queryOptions, queryKey: ['adminPayments', adminKey] }
+    ...reqOptions, query: { ...queryOptions, queryKey: ["adminPayments", adminKey] }
   });
 
   const adminRequest = reqOptions.request;
@@ -512,213 +721,150 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
   const deleteMutation = useAdminDeleteUser({ request: adminRequest });
   const activatePaymentMutation = useAdminActivatePayment({ request: adminRequest });
   const removePaymentMutation = useAdminRemovePayment({ request: adminRequest });
-  const { toast } = useToast();
 
-  const refetchUsers = () => queryClient.invalidateQueries({ queryKey: ['adminUsers', adminKey] });
-  const refetchPayments = () => queryClient.invalidateQueries({ queryKey: ['adminPayments', adminKey] });
+  const refetchUsers = () => queryClient.invalidateQueries({ queryKey: ["adminUsers", adminKey] });
+  const refetchPayments = () => queryClient.invalidateQueries({ queryKey: ["adminPayments", adminKey] });
 
   function handleActivatePayment(subId: number, userName: string) {
-    activatePaymentMutation.mutate(
-      { id: subId },
-      {
-        onSuccess: () => {
-          toast({ title: "Activated", description: `Subscription for ${userName} has been activated.` });
-          refetchPayments();
-          refetchUsers();
-        },
-        onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
-      }
-    );
+    activatePaymentMutation.mutate({ id: subId }, {
+      onSuccess: () => { toast({ title: "Activated", description: `Subscription for ${userName} activated.` }); refetchPayments(); refetchUsers(); },
+      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+    });
   }
 
   function handleRemovePayment(subId: number, userName: string) {
-    removePaymentMutation.mutate(
-      { id: subId },
-      {
-        onSuccess: () => {
-          toast({ title: "Removed", description: `Subscription for ${userName} has been removed.` });
-          refetchPayments();
-          refetchUsers();
-        },
-        onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
-      }
-    );
+    removePaymentMutation.mutate({ id: subId }, {
+      onSuccess: () => { toast({ title: "Removed", description: `Subscription for ${userName} removed.` }); refetchPayments(); refetchUsers(); },
+      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+    });
   }
 
   function handleUpgrade(userId: number, userName: string) {
-    upgradeMutation.mutate(
-      { id: userId },
-      {
-        onSuccess: () => {
-          toast({ title: "Upgraded", description: `${userName} has been upgraded to Pro.` });
-          refetchUsers();
-        },
-        onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
-      }
-    );
+    upgradeMutation.mutate({ id: userId }, {
+      onSuccess: () => { toast({ title: "Upgraded", description: `${userName} upgraded to Pro.` }); refetchUsers(); },
+      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+    });
   }
 
   function handleSuspend(userId: number, userName: string) {
-    suspendMutation.mutate(
-      { id: userId },
-      {
-        onSuccess: () => {
-          toast({ title: "Suspended", description: `${userName} has been suspended.` });
-          refetchUsers();
-        },
-        onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
-      }
-    );
+    suspendMutation.mutate({ id: userId }, {
+      onSuccess: () => { toast({ title: "Suspended", description: `${userName} has been suspended.` }); refetchUsers(); },
+      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+    });
   }
 
   function handleUnsuspend(userId: number, userName: string) {
-    unsuspendMutation.mutate(
-      { id: userId },
-      {
-        onSuccess: () => {
-          toast({ title: "Unsuspended", description: `${userName} has been unsuspended.` });
-          refetchUsers();
-        },
-        onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
-      }
-    );
+    unsuspendMutation.mutate({ id: userId }, {
+      onSuccess: () => { toast({ title: "Unsuspended", description: `${userName} has been unsuspended.` }); refetchUsers(); },
+      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+    });
   }
 
   function handleDelete(userId: number, userName: string) {
-    deleteMutation.mutate(
-      { id: userId },
-      {
-        onSuccess: () => {
-          toast({ title: "Deleted", description: `${userName} has been permanently deleted.` });
-          refetchUsers();
-        },
-        onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
-      }
-    );
+    deleteMutation.mutate({ id: userId }, {
+      onSuccess: () => { toast({ title: "Deleted", description: `${userName} permanently deleted.` }); refetchUsers(); },
+      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+    });
   }
 
   const settingsForm = useForm<z.infer<typeof settingsSchema>>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      subscriptionPrice: 0,
-      weeklyPrice: 0,
-      currency: "KES",
-      paylorApiKey: "",
-      paylorApiUrl: "https://api.paylorke.com/api/v1",
-      paylorChannelId: "",
-      paylorWebhookSecret: "",
-      appUrl: "",
-      adminKey: "",
-      freeDownloadsPerUser: 1,
-      instagramSessionId: "",
+      subscriptionPrice: 0, weeklyPrice: 0, currency: "KES",
+      paylorApiKey: "", paylorApiUrl: "https://api.paylorke.com/api/v1",
+      paylorChannelId: "", paylorWebhookSecret: "", appUrl: "",
+      adminKey: "", freeDownloadsPerUser: 1,
     },
   });
 
-  // Populate the settings form once data loads from the API.
   useEffect(() => {
-    if (settings) {
-      settingsForm.reset(settings);
-    }
+    if (settings) settingsForm.reset(settings);
   }, [settings, settingsForm]);
 
-  // Handle unauthorized admin key
   if (statsError instanceof ApiError && statsError.status === 401) {
     onLogout();
     toast({ variant: "destructive", title: "Unauthorized", description: "Invalid admin key" });
     return null;
   }
 
+  const statCards = [
+    { label: "Total Users", value: stats?.totalUsers ?? 0, testId: "text-stats-total-users", color: "" },
+    { label: "Active Subscribers", value: stats?.activeSubscribers ?? 0, testId: "text-stats-active-subs", color: "text-primary" },
+    { label: "Total Downloads", value: stats?.totalDownloads ?? 0, testId: "text-stats-total-dl", color: "" },
+    { label: "Revenue (Month)", value: `${settings?.currency || "KSH"} ${stats?.revenueThisMonth ?? 0}`, testId: "text-stats-revenue", color: "text-green-500" },
+    { label: "New Users (Month)", value: stats?.newUsersThisMonth ?? 0, testId: "text-stats-new-users", color: "" },
+  ];
+
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      <div className="flex justify-between items-center bg-card p-6 rounded-xl border border-border">
+    <div className="container mx-auto px-4 py-8 space-y-6 max-w-7xl">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card border border-border p-6 rounded-xl">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Manage users, view stats, and configure app settings.</p>
+          <h1 className="text-2xl font-bold tracking-tight">Admin Dashboard</h1>
+          <p className="text-muted-foreground text-sm mt-1">Manage users, monitor payments and configure the app.</p>
         </div>
-        <Button variant="outline" onClick={onLogout} data-testid="button-admin-logout">Exit Admin</Button>
+        <Button variant="outline" size="sm" onClick={onLogout} data-testid="button-admin-logout">
+          Exit Admin
+        </Button>
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-8">
-          <TabsTrigger value="overview" className="flex items-center gap-2" data-testid="tab-overview">
-            <BarChart3 className="w-4 h-4" /> Overview
+        <TabsList className="grid w-full grid-cols-4 mb-6 h-11">
+          <TabsTrigger value="overview" className="gap-2 text-sm" data-testid="tab-overview">
+            <BarChart3 className="w-4 h-4" /> <span className="hidden sm:inline">Overview</span>
           </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center gap-2" data-testid="tab-users">
-            <Users className="w-4 h-4" /> Users
+          <TabsTrigger value="users" className="gap-2 text-sm" data-testid="tab-users">
+            <Users className="w-4 h-4" /> <span className="hidden sm:inline">Users</span>
           </TabsTrigger>
-          <TabsTrigger value="payments" className="flex items-center gap-2" data-testid="tab-payments">
-            <CreditCard className="w-4 h-4" /> Payments
+          <TabsTrigger value="payments" className="gap-2 text-sm" data-testid="tab-payments">
+            <CreditCard className="w-4 h-4" /> <span className="hidden sm:inline">Payments</span>
           </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2" data-testid="tab-settings">
-            <Settings className="w-4 h-4" /> Settings
+          <TabsTrigger value="settings" className="gap-2 text-sm" data-testid="tab-settings">
+            <Settings className="w-4 h-4" /> <span className="hidden sm:inline">Settings</span>
           </TabsTrigger>
         </TabsList>
 
+        {/* Overview */}
         <TabsContent value="overview" className="space-y-6">
-          {statsLoading ? <div className="p-8 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div> : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold" data-testid="text-stats-total-users">{stats?.totalUsers || 0}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Active Subscribers</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-primary" data-testid="text-stats-active-subs">{stats?.activeSubscribers || 0}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Downloads</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold" data-testid="text-stats-total-dl">{stats?.totalDownloads || 0}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Revenue (Month)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-500" data-testid="text-stats-revenue">
-                    {settings?.currency || "KSH"} {stats?.revenueThisMonth || 0}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">New Users (Month)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold" data-testid="text-stats-new-users">{stats?.newUsersThisMonth || 0}</div>
-                </CardContent>
-              </Card>
+          {statsLoading ? (
+            <div className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {statCards.map((s) => (
+                <Card key={s.label} className="border-border/70">
+                  <CardHeader className="pb-2 pt-4 px-4">
+                    <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{s.label}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4">
+                    <div className={`text-2xl font-bold ${s.color}`} data-testid={s.testId}>{s.value}</div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </TabsContent>
 
+        {/* Users */}
         <TabsContent value="users">
           <Card>
             <CardHeader>
-              <CardTitle>Registered Users</CardTitle>
-              <CardDescription>A complete list of all users on the platform.</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" /> Registered Users
+              </CardTitle>
+              <CardDescription>All users on the platform with their status and actions.</CardDescription>
             </CardHeader>
             <CardContent>
-              {usersLoading ? <div className="p-8 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div> : (
-                <div className="rounded-md border border-border overflow-x-auto">
+              {usersLoading ? (
+                <div className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div>
+              ) : (
+                <div className="rounded-lg border border-border overflow-x-auto">
                   <Table>
                     <TableHeader className="bg-muted/50">
                       <TableRow>
                         <TableHead>Name</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Phone</TableHead>
-                        <TableHead>Downloads</TableHead>
+                        <TableHead className="text-center">Downloads</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Joined</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
@@ -726,94 +872,62 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
                     </TableHeader>
                     <TableBody>
                       {users?.map((u) => (
-                        <TableRow key={u.id} className={u.isSuspended ? "opacity-60" : ""}>
-                          <TableCell className="font-medium">{u.name}</TableCell>
-                          <TableCell>{u.email}</TableCell>
-                          <TableCell className="text-muted-foreground">{u.phone}</TableCell>
-                          <TableCell>{u.downloadsCount}</TableCell>
+                        <TableRow key={u.id} className={u.isSuspended ? "opacity-50" : ""}>
+                          <TableCell className="font-medium whitespace-nowrap">{u.name}</TableCell>
+                          <TableCell className="text-muted-foreground text-sm">{u.email}</TableCell>
+                          <TableCell className="text-muted-foreground text-sm">{u.phone}</TableCell>
+                          <TableCell className="text-center font-mono text-sm">{u.downloadsCount}</TableCell>
                           <TableCell>
                             <div className="flex flex-col gap-1">
-                              {u.subscriptionStatus === "active" ? (
-                                <Badge variant="default" className="bg-primary/20 text-primary hover:bg-primary/30 w-fit">Pro</Badge>
-                              ) : (
-                                <Badge variant="secondary" className="w-fit">Free</Badge>
-                              )}
-                              {u.isSuspended && (
-                                <Badge variant="destructive" className="w-fit">Suspended</Badge>
-                              )}
+                              {u.subscriptionStatus === "active"
+                                ? <Badge className="bg-primary/15 text-primary border-primary/30 w-fit text-xs">Pro</Badge>
+                                : <Badge variant="secondary" className="w-fit text-xs">Free</Badge>}
+                              {u.isSuspended && <Badge variant="destructive" className="w-fit text-xs">Suspended</Badge>}
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground text-sm">
+                          <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
                             {new Date(u.createdAt).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
-                            <div className="flex gap-2 justify-end">
+                            <div className="flex gap-1.5 justify-end">
                               {u.subscriptionStatus !== "active" && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-primary border-primary/30 hover:bg-primary/10"
-                                  title="Upgrade to Pro"
-                                  onClick={() => handleUpgrade(u.id, u.name)}
-                                  disabled={upgradeMutation.isPending}
-                                  data-testid={`btn-upgrade-${u.id}`}
-                                >
-                                  <ArrowUpCircle className="w-4 h-4" />
+                                <Button size="sm" variant="outline" className="text-primary border-primary/30 hover:bg-primary/10 h-8 w-8 p-0"
+                                  title="Upgrade to Pro" onClick={() => handleUpgrade(u.id, u.name)} disabled={upgradeMutation.isPending}
+                                  data-testid={`btn-upgrade-${u.id}`}>
+                                  <ArrowUpCircle className="w-3.5 h-3.5" />
                                 </Button>
                               )}
                               {u.isSuspended ? (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-green-600 border-green-600/30 hover:bg-green-600/10"
-                                  title="Unsuspend user"
-                                  onClick={() => handleUnsuspend(u.id, u.name)}
-                                  disabled={unsuspendMutation.isPending}
-                                  data-testid={`btn-unsuspend-${u.id}`}
-                                >
-                                  <ShieldCheck className="w-4 h-4" />
+                                <Button size="sm" variant="outline" className="text-green-500 border-green-500/30 hover:bg-green-500/10 h-8 w-8 p-0"
+                                  title="Unsuspend" onClick={() => handleUnsuspend(u.id, u.name)} disabled={unsuspendMutation.isPending}
+                                  data-testid={`btn-unsuspend-${u.id}`}>
+                                  <ShieldCheck className="w-3.5 h-3.5" />
                                 </Button>
                               ) : (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-orange-500 border-orange-500/30 hover:bg-orange-500/10"
-                                  title="Suspend user"
-                                  onClick={() => handleSuspend(u.id, u.name)}
-                                  disabled={suspendMutation.isPending}
-                                  data-testid={`btn-suspend-${u.id}`}
-                                >
-                                  <ShieldOff className="w-4 h-4" />
+                                <Button size="sm" variant="outline" className="text-orange-500 border-orange-500/30 hover:bg-orange-500/10 h-8 w-8 p-0"
+                                  title="Suspend" onClick={() => handleSuspend(u.id, u.name)} disabled={suspendMutation.isPending}
+                                  data-testid={`btn-suspend-${u.id}`}>
+                                  <ShieldOff className="w-3.5 h-3.5" />
                                 </Button>
                               )}
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-destructive border-destructive/30 hover:bg-destructive/10"
-                                    title="Delete user"
-                                    disabled={deleteMutation.isPending}
-                                    data-testid={`btn-delete-${u.id}`}
-                                  >
-                                    <Trash2 className="w-4 h-4" />
+                                  <Button size="sm" variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10 h-8 w-8 p-0"
+                                    title="Delete" disabled={deleteMutation.isPending} data-testid={`btn-delete-${u.id}`}>
+                                    <Trash2 className="w-3.5 h-3.5" />
                                   </Button>
                                 </AlertDialogTrigger>
-                                <AlertDialogContent>
+                                <AlertDialogContent className="dark bg-card border-border">
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>Delete {u.name}?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      This will permanently delete <strong>{u.name}</strong> ({u.email}) and all their downloads and subscriptions. This action cannot be undone.
+                                      This will permanently delete <strong>{u.name}</strong> ({u.email}) and all their data. This cannot be undone.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                      onClick={() => handleDelete(u.id, u.name)}
-                                    >
-                                      Delete permanently
-                                    </AlertDialogAction>
+                                    <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      onClick={() => handleDelete(u.id, u.name)}>Delete permanently</AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
@@ -823,7 +937,7 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
                       ))}
                       {!users?.length && (
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No users found.</TableCell>
+                          <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">No users found.</TableCell>
                         </TableRow>
                       )}
                     </TableBody>
@@ -834,31 +948,30 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
           </Card>
         </TabsContent>
 
+        {/* Payments */}
         <TabsContent value="payments">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-primary" />
-                Payment History
+                <CreditCard className="w-5 h-5 text-primary" /> Payment Records
               </CardTitle>
-              <CardDescription>All subscription payments — who paid, when, and how much.</CardDescription>
+              <CardDescription>All subscription payments — who paid, when, and current status.</CardDescription>
             </CardHeader>
             <CardContent>
               {paymentsLoading ? (
-                <div className="p-8 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div>
+                <div className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div>
               ) : (
-                <div className="rounded-md border border-border overflow-x-auto">
+                <div className="rounded-lg border border-border overflow-x-auto">
                   <Table>
                     <TableHeader className="bg-muted/50">
                       <TableRow>
                         <TableHead>#</TableHead>
                         <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
                         <TableHead>Phone</TableHead>
                         <TableHead>Amount</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Reference</TableHead>
-                        <TableHead>Paid At</TableHead>
+                        <TableHead>Paid</TableHead>
                         <TableHead>Expires</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                       </TableRow>
@@ -867,84 +980,68 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
                       {payments?.map((p) => (
                         <TableRow key={p.id} className={p.status === "pending" ? "bg-amber-500/5" : ""}>
                           <TableCell className="text-muted-foreground text-xs">{p.id}</TableCell>
-                          <TableCell className="font-medium whitespace-nowrap">{p.userName}</TableCell>
-                          <TableCell className="text-muted-foreground">{p.userEmail}</TableCell>
-                          <TableCell className="text-muted-foreground">{p.userPhone ?? "—"}</TableCell>
-                          <TableCell className="font-semibold text-green-400 whitespace-nowrap">
+                          <TableCell>
+                            <div className="font-medium whitespace-nowrap text-sm">{p.userName}</div>
+                            <div className="text-xs text-muted-foreground">{p.userEmail}</div>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-sm">{p.userPhone ?? "—"}</TableCell>
+                          <TableCell className="font-semibold text-green-400 whitespace-nowrap text-sm">
                             {p.currency} {p.amountPaid.toLocaleString()}
                           </TableCell>
                           <TableCell>
                             {p.status === "active" ? (
-                              <Badge className="bg-primary/20 text-primary hover:bg-primary/30 whitespace-nowrap">
+                              <Badge className="bg-primary/15 text-primary text-xs whitespace-nowrap">
                                 <CheckCircle2 className="w-3 h-3 mr-1" /> Paid
                               </Badge>
                             ) : p.status === "pending" ? (
-                              <Badge variant="outline" className="border-amber-500/50 text-amber-400 whitespace-nowrap">
+                              <Badge variant="outline" className="border-amber-500/50 text-amber-400 text-xs whitespace-nowrap">
                                 <Clock className="w-3 h-3 mr-1" /> Pending
                               </Badge>
                             ) : (
-                              <Badge variant="destructive" className="whitespace-nowrap">{p.status}</Badge>
+                              <Badge variant="destructive" className="text-xs whitespace-nowrap">{p.status}</Badge>
                             )}
                           </TableCell>
                           <TableCell>
-                            {p.paymentReference ? (
-                              <span className="font-mono text-xs bg-muted px-2 py-0.5 rounded text-muted-foreground">
-                                {p.paymentReference}
-                              </span>
-                            ) : "—"}
+                            {p.paymentReference
+                              ? <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded text-muted-foreground">{p.paymentReference}</span>
+                              : "—"}
                           </TableCell>
-                          <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
+                          <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
                             {new Date(p.paidAt).toLocaleString()}
                           </TableCell>
-                          <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
+                          <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
                             {new Date(p.expiresAt).toLocaleDateString()}
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell>
                             <div className="flex gap-1.5 justify-end">
                               {p.status === "pending" && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-primary border-primary/30 hover:bg-primary/10 whitespace-nowrap"
+                                <Button size="sm" variant="outline" className="text-primary border-primary/30 hover:bg-primary/10 whitespace-nowrap h-8 text-xs"
                                   onClick={() => handleActivatePayment(p.id, p.userName)}
                                   disabled={activatePaymentMutation.isPending || removePaymentMutation.isPending}
-                                  data-testid={`btn-activate-payment-${p.id}`}
-                                >
-                                  {activatePaymentMutation.isPending ? (
-                                    <Loader2 className="w-3 h-3 animate-spin" />
-                                  ) : (
-                                    <><CheckCircle2 className="w-3 h-3 mr-1" /> Activate</>
-                                  )}
+                                  data-testid={`btn-activate-payment-${p.id}`}>
+                                  {activatePaymentMutation.isPending
+                                    ? <Loader2 className="w-3 h-3 animate-spin" />
+                                    : <><CheckCircle2 className="w-3 h-3 mr-1" />Activate</>}
                                 </Button>
                               )}
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-destructive border-destructive/30 hover:bg-destructive/10 whitespace-nowrap"
-                                    disabled={removePaymentMutation.isPending}
-                                    data-testid={`btn-remove-payment-${p.id}`}
-                                  >
-                                    <Trash2 className="w-3 h-3 mr-1" /> Remove
+                                  <Button size="sm" variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10 h-8 w-8 p-0"
+                                    disabled={removePaymentMutation.isPending} data-testid={`btn-remove-payment-${p.id}`}>
+                                    <Trash2 className="w-3 h-3" />
                                   </Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent className="dark bg-card border-border">
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>Remove subscription?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      This will permanently remove <strong>{p.userName}</strong>'s subscription record.
-                                      They will lose Pro access immediately. This cannot be undone.
+                                      This removes <strong>{p.userName}</strong>'s subscription. They lose Pro access immediately. Cannot be undone.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                      onClick={() => handleRemovePayment(p.id, p.userName)}
-                                    >
-                                      Remove
-                                    </AlertDialogAction>
+                                    <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      onClick={() => handleRemovePayment(p.id, p.userName)}>Remove</AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
@@ -954,9 +1051,7 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
                       ))}
                       {!payments?.length && (
                         <TableRow>
-                          <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                            No payment records yet.
-                          </TableCell>
+                          <TableCell colSpan={9} className="text-center py-10 text-muted-foreground">No payment records yet.</TableCell>
                         </TableRow>
                       )}
                     </TableBody>
@@ -965,277 +1060,142 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
               )}
             </CardContent>
             {!!payments?.length && (
-              <CardFooter className="text-sm text-muted-foreground">
-                {payments.length} payment record{payments.length !== 1 ? "s" : ""} total ·{" "}
-                {payments.filter((p) => p.status === "active").length} confirmed
+              <CardFooter className="text-xs text-muted-foreground border-t border-border pt-4">
+                {payments.length} total · {payments.filter((p) => p.status === "active").length} confirmed
               </CardFooter>
             )}
           </Card>
         </TabsContent>
 
+        {/* Settings */}
         <TabsContent value="settings">
           <Card className="max-w-2xl">
             <CardHeader>
-              <CardTitle>Application Settings</CardTitle>
-              <CardDescription>Configure pricing, API keys, and limits.</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5 text-primary" /> Application Settings
+              </CardTitle>
+              <CardDescription>Configure pricing, payment gateway, and account limits.</CardDescription>
             </CardHeader>
             <CardContent>
-              {settingsLoading ? <div className="p-8 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div> : (
+              {settingsLoading ? (
+                <div className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div>
+              ) : (
                 <Form {...settingsForm}>
                   <form onSubmit={settingsForm.handleSubmit((values) => {
-                    updateSettingsMutation.mutate(
-                      { data: values },
-                      {
-                        onSuccess: () => toast({ title: "Settings updated", description: "Changes saved successfully" }),
-                        onError: (e: unknown) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(e, "Failed to update settings") })
-                      }
-                    );
-                  })} className="space-y-6">
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField control={settingsForm.control} name="subscriptionPrice" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Monthly Price</FormLabel>
-                          <FormControl><Input type="number" {...field} data-testid="input-setting-price" /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={settingsForm.control} name="weeklyPrice" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Weekly Price</FormLabel>
-                          <FormControl><Input type="number" {...field} data-testid="input-setting-weekly-price" /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
+                    updateSettingsMutation.mutate({ data: values }, {
+                      onSuccess: () => toast({ title: "Settings saved", description: "Changes applied successfully." }),
+                      onError: (e: unknown) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(e, "Failed to update settings") }),
+                    });
+                  })} className="space-y-8">
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField control={settingsForm.control} name="currency" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Currency</FormLabel>
-                          <FormControl><Input {...field} data-testid="input-setting-currency" /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={settingsForm.control} name="freeDownloadsPerUser" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Free Downloads Per User</FormLabel>
-                          <FormControl><Input type="number" {...field} data-testid="input-setting-free-dl" /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
-
-                    <div className="pt-4 border-t border-border space-y-5">
+                    {/* Pricing */}
+                    <div className="space-y-4">
                       <div>
-                        <h3 className="text-lg font-semibold">Paylor Payment Gateway</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Paylor processes M-Pesa payments. All three fields below are required for payments to work.
-                          Get these credentials from your{" "}
-                          <a href="https://paylor.webnixke.com" target="_blank" rel="noreferrer" className="text-primary underline underline-offset-2 inline-flex items-center gap-1">
-                            Paylor merchant dashboard <ExternalLink className="w-3 h-3" />
-                          </a>.
+                        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Pricing</h3>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField control={settingsForm.control} name="subscriptionPrice" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Monthly Price (KSH)</FormLabel>
+                            <FormControl><Input type="number" {...field} data-testid="input-setting-price" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={settingsForm.control} name="weeklyPrice" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Weekly Price (KSH)</FormLabel>
+                            <FormControl><Input type="number" {...field} data-testid="input-setting-weekly-price" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField control={settingsForm.control} name="currency" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Currency</FormLabel>
+                            <FormControl><Input {...field} data-testid="input-setting-currency" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={settingsForm.control} name="freeDownloadsPerUser" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Free Downloads Per User</FormLabel>
+                            <FormControl><Input type="number" {...field} data-testid="input-setting-free-dl" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                    </div>
+
+                    {/* Paylor */}
+                    <div className="space-y-4 pt-2 border-t border-border">
+                      <div>
+                        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Paylor Payment Gateway</h3>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          M-Pesa payments are processed through Paylor. Get credentials from your{" "}
+                          <a href="https://paylor.webnixke.com" target="_blank" rel="noreferrer" className="text-primary underline inline-flex items-center gap-0.5">
+                            Paylor dashboard <ExternalLink className="w-3 h-3" />
+                          </a>
                         </p>
                       </div>
-
-                      {/* Warning banner when required fields are missing */}
-                      {(!settingsForm.watch("paylorApiKey") || !settingsForm.watch("paylorChannelId")) && (
-                        <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
-                          <TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" />
-                          <div>
-                            <p className="font-semibold">Payments are not configured</p>
-                            <p className="text-xs mt-0.5 text-amber-400/80">
-                              Fill in the API Key and Channel ID below so users can subscribe via M-Pesa.
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="space-y-5">
-                        <FormField control={settingsForm.control} name="paylorApiUrl" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Paylor API Base URL</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="https://paylor.webnixke.com/"
-                                data-testid="input-setting-paylor-url"
-                              />
-                            </FormControl>
-                            <FormDescription className="text-xs">
-                              The base URL of the Paylor API. Default is <code className="bg-muted px-1 rounded text-xs">https://paylor.webnixke.com/</code> — only change if Paylor gives you a different endpoint.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-
-                        <FormField control={settingsForm.control} name="paylorApiKey" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              API Key (pk_…) <span className="text-destructive ml-1">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="password"
-                                {...field}
-                                placeholder="pk_xxxxxxxxxxxxxxxxxxxxxxxx"
-                                data-testid="input-setting-paylor-key"
-                              />
-                            </FormControl>
-                            <FormDescription className="text-xs space-y-1">
-                              <span className="block">Found in your Paylor dashboard under <strong>API Keys</strong>. Starts with <code className="bg-muted px-1 rounded">pk_</code>. This single key is used for both sending M-Pesa prompts and checking payment status.</span>
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-
-                        <FormField control={settingsForm.control} name="paylorChannelId" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              Channel ID <span className="text-destructive ml-1">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="e.g. PAYL-XJ7K2P"
-                                data-testid="input-setting-paylor-channel"
-                              />
-                            </FormControl>
-                            <FormDescription className="text-xs">
-                              Your merchant channel ID from the Paylor dashboard under <strong>Channels</strong>. This tells Paylor which M-Pesa till/paybill to route payments to.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-
-                        <FormField control={settingsForm.control} name="paylorWebhookSecret" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Webhook Secret</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                type="password"
-                                placeholder="Paste the secret Paylor gave you"
-                                data-testid="input-setting-paylor-webhook-secret"
-                              />
-                            </FormControl>
-                            <FormDescription className="text-xs">
-                              After adding the webhook URL in your Paylor dashboard, Paylor shows a <strong>webhook secret</strong>. Paste it here — it lets the server verify that incoming payment notifications are genuine and not forged.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-
-                        <FormField control={settingsForm.control} name="appUrl" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              App URL <span className="text-destructive ml-1">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="https://yourapp.vercel.app"
-                                data-testid="input-setting-app-url"
-                              />
-                            </FormControl>
-                            <FormDescription className="text-xs">
-                              Your deployed app's public URL (no trailing slash). Paylor uses this to call back after payment.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-
-                        {/* Computed callback URL — copy and paste into Paylor dashboard */}
-                        <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-2">
-                          <p className="text-sm font-medium flex items-center gap-2">
-                            Callback URL to set in Paylor
-                            {!settingsForm.watch("appUrl") && (
-                              <span className="text-xs text-amber-400 font-normal">(set App URL above first)</span>
-                            )}
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <code className="flex-1 text-xs bg-background border border-border rounded px-3 py-2 text-muted-foreground select-all break-all">
-                              {settingsForm.watch("appUrl")
-                                ? `${settingsForm.watch("appUrl").replace(/\/$/, "")}/api/subscription/callback`
-                                : "—"}
-                            </code>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="shrink-0"
-                              disabled={!settingsForm.watch("appUrl")}
-                              onClick={() => {
-                                const url = `${settingsForm.watch("appUrl").replace(/\/$/, "")}/api/subscription/callback`;
-                                navigator.clipboard.writeText(url);
-                                toast({ title: "Copied!", description: "Paste this URL into your Paylor Webhook settings." });
-                              }}
-                            >
-                              <Copy className="w-3.5 h-3.5" />
-                            </Button>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            In your Paylor dashboard → <strong>Webhooks</strong>, set the callback URL to the value above. Paylor will POST to it after each payment.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-4 border-t border-border space-y-5">
-                      <div>
-                        <h3 className="text-lg font-semibold">Instagram & Facebook</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Instagram requires a session cookie to download videos. Log in to Instagram in your browser,
-                          open DevTools → Application → Cookies → instagram.com, and copy the <code className="bg-muted px-1 rounded text-xs">sessionid</code> value.
-                        </p>
-                      </div>
-
-                      {!settingsForm.watch("instagramSessionId") && (
-                        <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
-                          <TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" />
-                          <div>
-                            <p className="font-semibold">Instagram downloads are not configured</p>
-                            <p className="text-xs mt-0.5 text-amber-400/80">
-                              Add your Instagram Session ID below to enable Instagram and Facebook video downloads.
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      <FormField control={settingsForm.control} name="instagramSessionId" render={({ field }) => (
+                      <FormField control={settingsForm.control} name="paylorApiKey" render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Instagram Session ID</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              {...field}
-                              placeholder="Paste your Instagram sessionid cookie value"
-                              data-testid="input-setting-instagram-session"
-                            />
-                          </FormControl>
-                          <FormDescription className="text-xs">
-                            Found in your browser's DevTools under Cookies for instagram.com. Keep this secret — it grants access to your account.
-                          </FormDescription>
+                          <FormLabel>API Key (pk_…)</FormLabel>
+                          <FormControl><Input type="password" placeholder="pk_live_..." {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={settingsForm.control} name="paylorChannelId" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Channel ID</FormLabel>
+                          <FormControl><Input placeholder="Your Paylor channel ID" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={settingsForm.control} name="paylorWebhookSecret" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Webhook Secret (Key ID)</FormLabel>
+                          <FormControl><Input type="password" placeholder="Hex Key ID from dashboard" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={settingsForm.control} name="paylorApiUrl" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>API URL</FormLabel>
+                          <FormControl><Input {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
                     </div>
 
-                    <div className="pt-4 border-t border-border">
-                      <h3 className="text-lg font-medium mb-4">Security</h3>
+                    {/* App config */}
+                    <div className="space-y-4 pt-2 border-t border-border">
+                      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">App Configuration</h3>
+                      <FormField control={settingsForm.control} name="appUrl" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>App URL</FormLabel>
+                          <FormControl><Input placeholder="https://yourapp.vercel.app" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
                       <FormField control={settingsForm.control} name="adminKey" render={({ field }) => (
                         <FormItem>
                           <FormLabel>Admin Key</FormLabel>
-                          <FormControl><Input type="password" {...field} data-testid="input-setting-admin-key" /></FormControl>
-                          <FormDescription className="text-xs text-muted-foreground mt-1">If you change this, you will need to re-authenticate.</FormDescription>
+                          <FormControl><Input type="password" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
                     </div>
 
-                    <Button type="submit" disabled={updateSettingsMutation.isPending} data-testid="button-save-settings">
-                      {updateSettingsMutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                      Save Changes
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={updateSettingsMutation.isPending}
+                      data-testid="button-save-settings"
+                    >
+                      {updateSettingsMutation.isPending
+                        ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving…</>
+                        : "Save Changes"}
                     </Button>
                   </form>
                 </Form>

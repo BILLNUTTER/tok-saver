@@ -124,8 +124,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
-        <p>&copy; {new Date().getFullYear()} TokSaver. Download TikTok, Instagram & Facebook videos without watermarks.</p>
+      <footer className="border-t border-border py-8 px-4 text-center text-sm text-muted-foreground">
+        <p className="font-medium text-foreground/70 mb-1">TokSaver</p>
+        <p>&copy; {new Date().getFullYear()} TokSaver — Download TikTok & Facebook videos without watermarks.</p>
+        <p className="mt-2">
+          Support:{" "}
+          <a href="mailto:nutterxtech@gmail.com" className="text-primary hover:underline">nutterxtech@gmail.com</a>
+        </p>
       </footer>
 
       {/* iOS Safari install instructions */}
