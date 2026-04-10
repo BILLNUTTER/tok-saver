@@ -728,42 +728,42 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string; onLogout: () => 
   function handleActivatePayment(subId: number, userName: string) {
     activatePaymentMutation.mutate({ id: subId }, {
       onSuccess: () => { toast({ title: "Activated", description: `Subscription for ${userName} activated.` }); refetchPayments(); refetchUsers(); },
-      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err, "Could not activate subscription.") }),
     });
   }
 
   function handleRemovePayment(subId: number, userName: string) {
     removePaymentMutation.mutate({ id: subId }, {
       onSuccess: () => { toast({ title: "Removed", description: `Subscription for ${userName} removed.` }); refetchPayments(); refetchUsers(); },
-      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err, "Could not remove subscription.") }),
     });
   }
 
   function handleUpgrade(userId: number, userName: string) {
     upgradeMutation.mutate({ id: userId }, {
       onSuccess: () => { toast({ title: "Upgraded", description: `${userName} upgraded to Pro.` }); refetchUsers(); },
-      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err, "Could not upgrade user.") }),
     });
   }
 
   function handleSuspend(userId: number, userName: string) {
     suspendMutation.mutate({ id: userId }, {
       onSuccess: () => { toast({ title: "Suspended", description: `${userName} has been suspended.` }); refetchUsers(); },
-      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err, "Could not suspend user.") }),
     });
   }
 
   function handleUnsuspend(userId: number, userName: string) {
     unsuspendMutation.mutate({ id: userId }, {
       onSuccess: () => { toast({ title: "Unsuspended", description: `${userName} has been unsuspended.` }); refetchUsers(); },
-      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err, "Could not unsuspend user.") }),
     });
   }
 
   function handleDelete(userId: number, userName: string) {
     deleteMutation.mutate({ id: userId }, {
       onSuccess: () => { toast({ title: "Deleted", description: `${userName} permanently deleted.` }); refetchUsers(); },
-      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+      onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err, "Could not delete user.") }),
     });
   }
 

@@ -102,7 +102,7 @@ export default function Settings() {
           form.reset();
         },
         onError: (err) => {
-          toast({ variant: "destructive", title: "Failed", description: getApiErrorMessage(err) });
+          toast({ variant: "destructive", title: "Failed", description: getApiErrorMessage(err, "Could not update password.") });
         },
       }
     );
