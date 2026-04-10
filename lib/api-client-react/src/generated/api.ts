@@ -1092,6 +1092,346 @@ export const useAdminUpdateSettings = <
 };
 
 /**
+ * Activates a 1-month Pro subscription for the user. Requires admin key.
+ * @summary Upgrade user to Pro
+ */
+export const getAdminUpgradeUserUrl = (id: number) => {
+  return `/api/admin/users/${id}/upgrade`;
+};
+
+export const adminUpgradeUser = async (
+  id: number,
+  options?: RequestInit,
+): Promise<MessageResponse> => {
+  return customFetch<MessageResponse>(getAdminUpgradeUserUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getAdminUpgradeUserMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminUpgradeUser>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminUpgradeUser>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["adminUpgradeUser"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminUpgradeUser>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return adminUpgradeUser(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminUpgradeUserMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminUpgradeUser>>
+>;
+
+export type AdminUpgradeUserMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Upgrade user to Pro
+ */
+export const useAdminUpgradeUser = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminUpgradeUser>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof adminUpgradeUser>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getAdminUpgradeUserMutationOptions(options));
+};
+
+/**
+ * Suspends the user account, revoking all active tokens. Requires admin key.
+ * @summary Suspend a user
+ */
+export const getAdminSuspendUserUrl = (id: number) => {
+  return `/api/admin/users/${id}/suspend`;
+};
+
+export const adminSuspendUser = async (
+  id: number,
+  options?: RequestInit,
+): Promise<MessageResponse> => {
+  return customFetch<MessageResponse>(getAdminSuspendUserUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getAdminSuspendUserMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminSuspendUser>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminSuspendUser>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["adminSuspendUser"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminSuspendUser>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return adminSuspendUser(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminSuspendUserMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminSuspendUser>>
+>;
+
+export type AdminSuspendUserMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Suspend a user
+ */
+export const useAdminSuspendUser = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminSuspendUser>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof adminSuspendUser>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getAdminSuspendUserMutationOptions(options));
+};
+
+/**
+ * Lifts a suspension from the user account. Requires admin key.
+ * @summary Unsuspend a user
+ */
+export const getAdminUnsuspendUserUrl = (id: number) => {
+  return `/api/admin/users/${id}/unsuspend`;
+};
+
+export const adminUnsuspendUser = async (
+  id: number,
+  options?: RequestInit,
+): Promise<MessageResponse> => {
+  return customFetch<MessageResponse>(getAdminUnsuspendUserUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getAdminUnsuspendUserMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminUnsuspendUser>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminUnsuspendUser>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["adminUnsuspendUser"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminUnsuspendUser>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return adminUnsuspendUser(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminUnsuspendUserMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminUnsuspendUser>>
+>;
+
+export type AdminUnsuspendUserMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Unsuspend a user
+ */
+export const useAdminUnsuspendUser = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminUnsuspendUser>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof adminUnsuspendUser>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getAdminUnsuspendUserMutationOptions(options));
+};
+
+/**
+ * Permanently deletes the user and all their data. Requires admin key.
+ * @summary Delete a user
+ */
+export const getAdminDeleteUserUrl = (id: number) => {
+  return `/api/admin/users/${id}`;
+};
+
+export const adminDeleteUser = async (
+  id: number,
+  options?: RequestInit,
+): Promise<MessageResponse> => {
+  return customFetch<MessageResponse>(getAdminDeleteUserUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getAdminDeleteUserMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminDeleteUser>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminDeleteUser>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["adminDeleteUser"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminDeleteUser>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return adminDeleteUser(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminDeleteUserMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminDeleteUser>>
+>;
+
+export type AdminDeleteUserMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Delete a user
+ */
+export const useAdminDeleteUser = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminDeleteUser>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof adminDeleteUser>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getAdminDeleteUserMutationOptions(options));
+};
+
+/**
  * Returns overview stats for the admin dashboard. Requires admin key.
  * @summary Get admin dashboard stats
  */

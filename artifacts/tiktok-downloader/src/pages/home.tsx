@@ -15,15 +15,31 @@ import {
   useAdminGetUsers, 
   useAdminGetSettings, 
   useAdminUpdateSettings,
+  useAdminUpgradeUser,
+  useAdminSuspendUser,
+  useAdminUnsuspendUser,
+  useAdminDeleteUser,
   useGetSubscriptionStatus
 } from "@workspace/api-client-react";
 import { ApiError, getApiErrorMessage } from "@/lib/api-error";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Download, History, Settings, Users, BarChart3, Lock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, Download, History, Settings, Users, BarChart3, Lock, CheckCircle2, AlertCircle, ShieldOff, ShieldCheck, Trash2, ArrowUpCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // --- URL Input Form Schema ---
 const downloadSchema = z.object({
@@ -365,6 +381,7 @@ function AdminDashboard() {
 function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => void }) {
   const reqOptions = { request: { headers: { 'x-admin-key': adminKey } } };
   const queryOptions = { enabled: !!adminKey, retry: false };
+  const queryClient = useQueryClient();
   
   const { data: stats, isLoading: statsLoading, error: statsError } = useAdminGetStats({
     ...reqOptions,
@@ -382,7 +399,65 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
   });
 
   const updateSettingsMutation = useAdminUpdateSettings();
+  const upgradeMutation = useAdminUpgradeUser();
+  const suspendMutation = useAdminSuspendUser();
+  const unsuspendMutation = useAdminUnsuspendUser();
+  const deleteMutation = useAdminDeleteUser();
   const { toast } = useToast();
+
+  const refetchUsers = () => queryClient.invalidateQueries({ queryKey: ['adminUsers', adminKey] });
+
+  function handleUpgrade(userId: number, userName: string) {
+    upgradeMutation.mutate(
+      { id: userId, ...reqOptions },
+      {
+        onSuccess: () => {
+          toast({ title: "Upgraded", description: `${userName} has been upgraded to Pro.` });
+          refetchUsers();
+        },
+        onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+      }
+    );
+  }
+
+  function handleSuspend(userId: number, userName: string) {
+    suspendMutation.mutate(
+      { id: userId, ...reqOptions },
+      {
+        onSuccess: () => {
+          toast({ title: "Suspended", description: `${userName} has been suspended.` });
+          refetchUsers();
+        },
+        onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+      }
+    );
+  }
+
+  function handleUnsuspend(userId: number, userName: string) {
+    unsuspendMutation.mutate(
+      { id: userId, ...reqOptions },
+      {
+        onSuccess: () => {
+          toast({ title: "Unsuspended", description: `${userName} has been unsuspended.` });
+          refetchUsers();
+        },
+        onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+      }
+    );
+  }
+
+  function handleDelete(userId: number, userName: string) {
+    deleteMutation.mutate(
+      { id: userId, ...reqOptions },
+      {
+        onSuccess: () => {
+          toast({ title: "Deleted", description: `${userName} has been permanently deleted.` });
+          refetchUsers();
+        },
+        onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+      }
+    );
+  }
 
   const settingsForm = useForm<z.infer<typeof settingsSchema>>({
     resolver: zodResolver(settingsSchema),
@@ -491,7 +566,7 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
             </CardHeader>
             <CardContent>
               {usersLoading ? <div className="p-8 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div> : (
-                <div className="rounded-md border border-border">
+                <div className="rounded-md border border-border overflow-x-auto">
                   <Table>
                     <TableHeader className="bg-muted/50">
                       <TableRow>
@@ -501,30 +576,109 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
                         <TableHead>Downloads</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Joined</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {users?.map((u) => (
-                        <TableRow key={u.id}>
+                        <TableRow key={u.id} className={u.isSuspended ? "opacity-60" : ""}>
                           <TableCell className="font-medium">{u.name}</TableCell>
                           <TableCell>{u.email}</TableCell>
                           <TableCell className="text-muted-foreground">{u.phone}</TableCell>
                           <TableCell>{u.downloadsCount}</TableCell>
                           <TableCell>
-                            {u.subscriptionStatus === "active" ? (
-                              <Badge variant="default" className="bg-primary/20 text-primary hover:bg-primary/30">Pro</Badge>
-                            ) : (
-                              <Badge variant="secondary">Free</Badge>
-                            )}
+                            <div className="flex flex-col gap-1">
+                              {u.subscriptionStatus === "active" ? (
+                                <Badge variant="default" className="bg-primary/20 text-primary hover:bg-primary/30 w-fit">Pro</Badge>
+                              ) : (
+                                <Badge variant="secondary" className="w-fit">Free</Badge>
+                              )}
+                              {u.isSuspended && (
+                                <Badge variant="destructive" className="w-fit">Suspended</Badge>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell className="text-muted-foreground text-sm">
                             {new Date(u.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2 justify-end">
+                              {u.subscriptionStatus !== "active" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-primary border-primary/30 hover:bg-primary/10"
+                                  title="Upgrade to Pro"
+                                  onClick={() => handleUpgrade(u.id, u.name)}
+                                  disabled={upgradeMutation.isPending}
+                                  data-testid={`btn-upgrade-${u.id}`}
+                                >
+                                  <ArrowUpCircle className="w-4 h-4" />
+                                </Button>
+                              )}
+                              {u.isSuspended ? (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-green-600 border-green-600/30 hover:bg-green-600/10"
+                                  title="Unsuspend user"
+                                  onClick={() => handleUnsuspend(u.id, u.name)}
+                                  disabled={unsuspendMutation.isPending}
+                                  data-testid={`btn-unsuspend-${u.id}`}
+                                >
+                                  <ShieldCheck className="w-4 h-4" />
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-orange-500 border-orange-500/30 hover:bg-orange-500/10"
+                                  title="Suspend user"
+                                  onClick={() => handleSuspend(u.id, u.name)}
+                                  disabled={suspendMutation.isPending}
+                                  data-testid={`btn-suspend-${u.id}`}
+                                >
+                                  <ShieldOff className="w-4 h-4" />
+                                </Button>
+                              )}
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                                    title="Delete user"
+                                    disabled={deleteMutation.isPending}
+                                    data-testid={`btn-delete-${u.id}`}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete {u.name}?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This will permanently delete <strong>{u.name}</strong> ({u.email}) and all their downloads and subscriptions. This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      onClick={() => handleDelete(u.id, u.name)}
+                                    >
+                                      Delete permanently
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
                       {!users?.length && (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No users found.</TableCell>
+                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No users found.</TableCell>
                         </TableRow>
                       )}
                     </TableBody>

@@ -100,6 +100,7 @@ export interface AdminUserRecord {
   phone: string;
   createdAt: string;
   downloadsCount: number;
+  isSuspended: boolean;
   /** @nullable */
   subscriptionStatus?: string | null;
   /** @nullable */

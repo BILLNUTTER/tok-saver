@@ -36,6 +36,7 @@ router.get("/admin/users", requireAdmin, async (req, res): Promise<void> => {
         phone: user.phone,
         createdAt: user.createdAt,
         downloadsCount: Number(dlResult?.count ?? 0),
+        isSuspended: user.suspended,
         subscriptionStatus: activeSub?.status ?? null,
         subscriptionExpiresAt: activeSub?.expiresAt ?? null,
       };
@@ -43,6 +44,108 @@ router.get("/admin/users", requireAdmin, async (req, res): Promise<void> => {
   );
 
   res.json(result);
+});
+
+// Upgrade user: grant a 1-month Pro subscription
+router.post("/admin/users/:id/upgrade", requireAdmin, async (req, res): Promise<void> => {
+  const userId = parseInt(req.params.id, 10);
+  if (Number.isNaN(userId)) {
+    res.status(400).json({ error: "Invalid user ID" });
+    return;
+  }
+
+  const [user] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.id, userId));
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  const amount = await getSetting("subscription_price");
+  const currency = await getSetting("currency");
+
+  const expiresAt = new Date();
+  expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+  await db.insert(subscriptionsTable).values({
+    userId,
+    status: "active",
+    amountPaid: amount,
+    currency,
+    paymentReference: `ADMIN-UPGRADE-${userId}-${Date.now()}`,
+    expiresAt,
+  });
+
+  req.log.info({ userId }, "Admin upgraded user to Pro");
+  res.json({ message: "User upgraded to Pro successfully" });
+});
+
+// Suspend user: block login + revoke all current tokens
+router.post("/admin/users/:id/suspend", requireAdmin, async (req, res): Promise<void> => {
+  const userId = parseInt(req.params.id, 10);
+  if (Number.isNaN(userId)) {
+    res.status(400).json({ error: "Invalid user ID" });
+    return;
+  }
+
+  const [user] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.id, userId));
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  await db
+    .update(usersTable)
+    .set({ suspended: true, tokensRevokedBefore: new Date() })
+    .where(eq(usersTable.id, userId));
+
+  req.log.info({ userId }, "Admin suspended user");
+  res.json({ message: "User suspended" });
+});
+
+// Unsuspend user: restore access
+router.post("/admin/users/:id/unsuspend", requireAdmin, async (req, res): Promise<void> => {
+  const userId = parseInt(req.params.id, 10);
+  if (Number.isNaN(userId)) {
+    res.status(400).json({ error: "Invalid user ID" });
+    return;
+  }
+
+  const [user] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.id, userId));
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  await db
+    .update(usersTable)
+    .set({ suspended: false })
+    .where(eq(usersTable.id, userId));
+
+  req.log.info({ userId }, "Admin unsuspended user");
+  res.json({ message: "User unsuspended" });
+});
+
+// Delete user: remove user and all related data
+router.delete("/admin/users/:id", requireAdmin, async (req, res): Promise<void> => {
+  const userId = parseInt(req.params.id, 10);
+  if (Number.isNaN(userId)) {
+    res.status(400).json({ error: "Invalid user ID" });
+    return;
+  }
+
+  const [user] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.id, userId));
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  // Delete in dependency order: downloads → subscriptions → user
+  await db.delete(downloadsTable).where(eq(downloadsTable.userId, userId));
+  await db.delete(subscriptionsTable).where(eq(subscriptionsTable.userId, userId));
+  await db.delete(usersTable).where(eq(usersTable.id, userId));
+
+  req.log.info({ userId }, "Admin deleted user and all their data");
+  res.json({ message: "User deleted" });
 });
 
 router.get("/admin/settings", requireAdmin, async (req, res): Promise<void> => {

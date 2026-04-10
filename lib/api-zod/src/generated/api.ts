@@ -151,6 +151,7 @@ export const AdminGetUsersResponseItem = zod.object({
   phone: zod.string(),
   createdAt: zod.coerce.date(),
   downloadsCount: zod.number(),
+  isSuspended: zod.boolean(),
   subscriptionStatus: zod.string().nullish(),
   subscriptionExpiresAt: zod.coerce.date().nullish(),
 });
@@ -200,6 +201,70 @@ export const AdminUpdateSettingsResponse = zod.object({
   paylorChannelId: zod.string(),
   adminKey: zod.string(),
   freeDownloadsPerUser: zod.number(),
+});
+
+/**
+ * Activates a 1-month Pro subscription for the user. Requires admin key.
+ * @summary Upgrade user to Pro
+ */
+export const AdminUpgradeUserParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AdminUpgradeUserHeader = zod.object({
+  "x-admin-key": zod.string(),
+});
+
+export const AdminUpgradeUserResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
+ * Suspends the user account, revoking all active tokens. Requires admin key.
+ * @summary Suspend a user
+ */
+export const AdminSuspendUserParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AdminSuspendUserHeader = zod.object({
+  "x-admin-key": zod.string(),
+});
+
+export const AdminSuspendUserResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
+ * Lifts a suspension from the user account. Requires admin key.
+ * @summary Unsuspend a user
+ */
+export const AdminUnsuspendUserParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AdminUnsuspendUserHeader = zod.object({
+  "x-admin-key": zod.string(),
+});
+
+export const AdminUnsuspendUserResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
+ * Permanently deletes the user and all their data. Requires admin key.
+ * @summary Delete a user
+ */
+export const AdminDeleteUserParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AdminDeleteUserHeader = zod.object({
+  "x-admin-key": zod.string(),
+});
+
+export const AdminDeleteUserResponse = zod.object({
+  message: zod.string(),
 });
 
 /**

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -8,6 +8,7 @@ export const usersTable = pgTable("users", {
   email: text("email").notNull().unique(),
   phone: text("phone").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  suspended: boolean("suspended").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   // All JWT tokens with iat < tokensRevokedBefore are considered revoked.
   // Set to NOW() on logout to invalidate existing sessions.
@@ -17,6 +18,7 @@ export const usersTable = pgTable("users", {
 export const insertUserSchema = createInsertSchema(usersTable).omit({
   id: true,
   createdAt: true,
+  suspended: true,
   tokensRevokedBefore: true,
 });
 export type InsertUser = z.infer<typeof insertUserSchema>;

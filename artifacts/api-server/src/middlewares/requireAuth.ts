@@ -30,12 +30,22 @@ export async function requireAuth(
   }
 
   const [user] = await db
-    .select({ id: usersTable.id, email: usersTable.email, tokensRevokedBefore: usersTable.tokensRevokedBefore })
+    .select({
+      id: usersTable.id,
+      email: usersTable.email,
+      suspended: usersTable.suspended,
+      tokensRevokedBefore: usersTable.tokensRevokedBefore,
+    })
     .from(usersTable)
     .where(eq(usersTable.id, payload.userId));
 
   if (!user) {
     res.status(401).json({ error: "User not found" });
+    return;
+  }
+
+  if (user.suspended) {
+    res.status(403).json({ error: "Your account has been suspended. Please contact support." });
     return;
   }
 
