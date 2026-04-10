@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, createContext, useContext } from "react";
-import { setAuthTokenGetter, useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
+import { setAuthTokenGetter, useGetMe, getGetMeQueryKey, logout as apiLogout } from "@workspace/api-client-react";
 import type { UserResponse } from "@workspace/api-client-react";
 
 interface AuthState {
@@ -35,17 +35,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    // Revoke the token server-side so it cannot be reused even if intercepted.
+    // Fire-and-forget — we clear the local state regardless of network outcome.
+    apiLogout().catch(() => {});
     localStorage.removeItem("auth_token");
     setTokenState(null);
   }, []);
-
-  // Automatically logout if the token is invalid (useGetMe fails and token exists but no user returned after loading)
-  useEffect(() => {
-    if (token && !isUserLoading && !user) {
-      // Actually we don't want to prematurely clear if it's just a network error, 
-      // but assuming unauthenticated error returns no data
-    }
-  }, [token, isUserLoading, user]);
 
   return (
     <AuthContext.Provider
