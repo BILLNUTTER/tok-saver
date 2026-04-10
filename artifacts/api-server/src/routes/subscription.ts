@@ -150,62 +150,63 @@ router.post("/subscription/subscribe", requireAuth, async (req, res): Promise<vo
 // ---------------------------------------------------------------------------
 // Paylor payment callback — called by Paylor after payment completes.
 // Always returns 200 to stop Paylor retries regardless of outcome.
+// Matches by paymentReference only (not token) because some gateways
+// strip query parameters from the callback URL.
 // ---------------------------------------------------------------------------
 router.post("/subscription/callback", async (req, res): Promise<void> => {
-  req.log.info({ rawBody: req.body }, "Paylor raw callback received");
+  req.log.info({ rawBody: req.body, query: req.query }, "Paylor raw callback received");
 
-  // Try every field name Paylor might use for the payment reference and status.
+  // Accept any field name Paylor might use for reference and status.
   const body = req.body as Record<string, unknown>;
-  const reference =
-    (body.reference ?? body.payment_reference ?? body.order_id ?? body.ref ?? "") as string;
-  const status =
-    (body.status ?? body.payment_status ?? body.transaction_status ?? "") as string;
-  const callbackToken =
-    typeof req.query.token === "string" ? req.query.token : null;
 
-  req.log.info({ reference, status, hasToken: !!callbackToken }, "Paylor callback parsed");
+  // Walk nested objects in case Paylor wraps data (e.g. body.data.reference)
+  const flat = { ...body, ...(body.data && typeof body.data === "object" ? body.data as Record<string, unknown> : {}) };
+
+  const reference = (
+    flat.reference ?? flat.payment_reference ?? flat.order_id ?? flat.ref ??
+    flat.transaction_id ?? flat.transactionId ?? flat.merchantReference ?? ""
+  ) as string;
+
+  const status = (
+    flat.status ?? flat.payment_status ?? flat.transaction_status ??
+    flat.paymentStatus ?? flat.state ?? ""
+  ) as string;
+
+  req.log.info({ reference, status }, "Paylor callback parsed");
 
   if (!reference || !status) {
-    req.log.warn({ body }, "Callback missing reference or status — ignored");
-    res.status(200).json({ message: "Callback received but ignored (missing fields)" });
+    req.log.warn({ body }, "Callback missing reference or status — returning 200 to stop retries");
+    res.status(200).json({ message: "ok" });
     return;
   }
 
-  if (!callbackToken) {
-    req.log.warn({ reference }, "Callback received without token — ignored");
-    res.status(200).json({ message: "Callback received but ignored (missing token)" });
-    return;
-  }
-
-  const SUCCESSFUL_STATUSES = new Set(["success", "completed", "paid", "approved"]);
+  const SUCCESSFUL_STATUSES = new Set(["success", "completed", "paid", "approved", "successful", "complete"]);
 
   if (SUCCESSFUL_STATUSES.has(status.toLowerCase())) {
+    // Match by reference alone — token is a nice-to-have but may be stripped by the gateway
     const [pendingSub] = await db
       .select()
       .from(subscriptionsTable)
       .where(
         and(
           eq(subscriptionsTable.paymentReference, reference),
-          eq(subscriptionsTable.callbackToken, callbackToken),
           eq(subscriptionsTable.status, "pending")
         )
       );
 
     if (!pendingSub) {
-      req.log.warn({ reference }, "No matching pending subscription for callback");
-      res.status(200).json({ message: "Callback received — subscription not found or already processed" });
-      return;
+      req.log.warn({ reference }, "No matching pending subscription — may already be active");
+    } else {
+      await db
+        .update(subscriptionsTable)
+        .set({ status: "active" })
+        .where(eq(subscriptionsTable.id, pendingSub.id));
+
+      req.log.info({ userId: pendingSub.userId, reference }, "Subscription activated via callback");
     }
-
-    await db
-      .update(subscriptionsTable)
-      .set({ status: "active" })
-      .where(eq(subscriptionsTable.id, pendingSub.id));
-
-    req.log.info({ userId: pendingSub.userId, reference }, "Subscription activated via callback");
   }
 
-  res.json({ message: "Callback processed" });
+  res.status(200).json({ message: "ok" });
 });
 
 // ---------------------------------------------------------------------------

@@ -509,6 +509,43 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /admin/payments/{id}/activate:
+    post:
+      operationId: adminActivatePayment
+      tags: [admin]
+      summary: Manually activate a pending payment
+      description: Marks a pending subscription as active. Use when the payment gateway callback fails to activate automatically.
+      parameters:
+        - name: x-admin-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Subscription activated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          description: Invalid or missing admin key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /admin/payments:
     get:
       operationId: adminGetPayments

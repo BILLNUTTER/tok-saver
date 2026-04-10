@@ -308,6 +308,22 @@ export const AdminDeleteUserResponse = zod.object({
 });
 
 /**
+ * Marks a pending subscription as active. Use when the payment gateway callback fails to activate automatically.
+ * @summary Manually activate a pending payment
+ */
+export const AdminActivatePaymentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AdminActivatePaymentHeader = zod.object({
+  "x-admin-key": zod.string(),
+});
+
+export const AdminActivatePaymentResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
  * Returns all subscription payment records with user details. Requires admin key.
  * @summary List all payment records
  */

@@ -148,6 +148,32 @@ router.delete("/admin/users/:id", requireAdmin, async (req, res): Promise<void> 
   res.json({ message: "User deleted" });
 });
 
+router.post("/admin/payments/:id/activate", requireAdmin, async (req, res): Promise<void> => {
+  const subId = parseInt(req.params.id, 10);
+  if (Number.isNaN(subId)) {
+    res.status(400).json({ error: "Invalid subscription ID" });
+    return;
+  }
+
+  const [sub] = await db
+    .select()
+    .from(subscriptionsTable)
+    .where(eq(subscriptionsTable.id, subId));
+
+  if (!sub) {
+    res.status(404).json({ error: "Payment record not found" });
+    return;
+  }
+
+  await db
+    .update(subscriptionsTable)
+    .set({ status: "active" })
+    .where(eq(subscriptionsTable.id, subId));
+
+  req.log.info({ subId, userId: sub.userId }, "Admin manually activated subscription");
+  res.json({ message: "Subscription activated successfully" });
+});
+
 router.get("/admin/payments", requireAdmin, async (req, res): Promise<void> => {
   const payments = await db
     .select({

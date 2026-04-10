@@ -20,6 +20,7 @@ import {
   useAdminUnsuspendUser,
   useAdminDeleteUser,
   useAdminGetPayments,
+  useAdminActivatePayment,
   useGetSubscriptionStatus
 } from "@workspace/api-client-react";
 import { ApiError, getApiErrorMessage } from "@/lib/api-error";
@@ -485,9 +486,25 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
   const suspendMutation = useAdminSuspendUser({ request: adminRequest });
   const unsuspendMutation = useAdminUnsuspendUser({ request: adminRequest });
   const deleteMutation = useAdminDeleteUser({ request: adminRequest });
+  const activatePaymentMutation = useAdminActivatePayment({ request: adminRequest });
   const { toast } = useToast();
 
   const refetchUsers = () => queryClient.invalidateQueries({ queryKey: ['adminUsers', adminKey] });
+  const refetchPayments = () => queryClient.invalidateQueries({ queryKey: ['adminPayments', adminKey] });
+
+  function handleActivatePayment(subId: number, userName: string) {
+    activatePaymentMutation.mutate(
+      { id: subId },
+      {
+        onSuccess: () => {
+          toast({ title: "Activated", description: `Subscription for ${userName} has been activated.` });
+          refetchPayments();
+          refetchUsers();
+        },
+        onError: (err) => toast({ variant: "destructive", title: "Error", description: getApiErrorMessage(err) }),
+      }
+    );
+  }
 
   function handleUpgrade(userId: number, userName: string) {
     upgradeMutation.mutate(
@@ -800,11 +817,12 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
                         <TableHead>Reference</TableHead>
                         <TableHead>Paid At</TableHead>
                         <TableHead>Expires</TableHead>
+                        <TableHead className="text-right">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {payments?.map((p) => (
-                        <TableRow key={p.id}>
+                        <TableRow key={p.id} className={p.status === "pending" ? "bg-amber-500/5" : ""}>
                           <TableCell className="text-muted-foreground text-xs">{p.id}</TableCell>
                           <TableCell className="font-medium whitespace-nowrap">{p.userName}</TableCell>
                           <TableCell className="text-muted-foreground">{p.userEmail}</TableCell>
@@ -818,7 +836,7 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
                                 <CheckCircle2 className="w-3 h-3 mr-1" /> Paid
                               </Badge>
                             ) : p.status === "pending" ? (
-                              <Badge variant="secondary" className="whitespace-nowrap">
+                              <Badge variant="outline" className="border-amber-500/50 text-amber-400 whitespace-nowrap">
                                 <Clock className="w-3 h-3 mr-1" /> Pending
                               </Badge>
                             ) : (
@@ -837,6 +855,24 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
                           </TableCell>
                           <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
                             {new Date(p.expiresAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {p.status === "pending" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-primary border-primary/30 hover:bg-primary/10 whitespace-nowrap"
+                                onClick={() => handleActivatePayment(p.id, p.userName)}
+                                disabled={activatePaymentMutation.isPending}
+                                data-testid={`btn-activate-payment-${p.id}`}
+                              >
+                                {activatePaymentMutation.isPending ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <><CheckCircle2 className="w-3 h-3 mr-1" /> Activate</>
+                                )}
+                              </Button>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}
