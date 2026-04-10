@@ -1,0 +1,228 @@
+Apr 10 13:32:33.84
+GET
+500
+tok-saver.vercel.app
+/api/admin/settings
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:32:33.84
+GET
+500
+tok-saver.vercel.app
+/api/admin/users
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:32:33.83
+GET
+500
+tok-saver.vercel.app
+/api/admin/stats
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:32:31.02
+PUT
+500
+tok-saver.vercel.app
+/api/admin/settings
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:32:24.83
+PUT
+500
+tok-saver.vercel.app
+/api/admin/settings
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:32:04.78
+GET
+500
+tok-saver.vercel.app
+/api/admin/stats
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:32:04.78
+GET
+500
+tok-saver.vercel.app
+/api/admin/settings
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:32:04.78
+GET
+500
+tok-saver.vercel.app
+/api/admin/users
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:57.52
+GET
+500
+tok-saver.vercel.app
+/api/admin/settings
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:57.52
+GET
+500
+tok-saver.vercel.app
+/api/admin/users
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:57.52
+GET
+500
+tok-saver.vercel.app
+/api/admin/stats
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:53.91
+GET
+500
+tok-saver.vercel.app
+/api/admin/users
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:53.91
+GET
+500
+tok-saver.vercel.app
+/api/admin/settings
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:53.91
+GET
+500
+tok-saver.vercel.app
+/api/admin/stats
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:36.85
+GET
+500
+tok-saver.vercel.app
+/api/admin/settings
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:36.85
+GET
+500
+tok-saver.vercel.app
+/api/admin/users
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:36.85
+GET
+500
+tok-saver.vercel.app
+/api/admin/stats
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:34.33
+GET
+500
+tok-saver.vercel.app
+/api/admin/users
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:34.33
+GET
+500
+tok-saver.vercel.app
+/api/admin/settings
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:34.32
+GET
+500
+tok-saver.vercel.app
+/api/admin/stats
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:33.21
+GET
+500
+tok-saver.vercel.app
+/api/admin/users
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:33.21
+GET
+500
+tok-saver.vercel.app
+/api/admin/stats
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:33.21
+GET
+500
+tok-saver.vercel.app
+/api/admin/settings
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:25.52
+GET
+500
+tok-saver.vercel.app
+/api/admin/settings
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:25.52
+GET
+500
+tok-saver.vercel.app
+/api/admin/users
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:25.52
+GET
+500
+tok-saver.vercel.app
+/api/admin/stats
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:22.26
+GET
+500
+tok-saver.vercel.app
+/api/admin/settings
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue. Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:22.26
+GET
+500
+tok-saver.vercel.app
+/api/admin/users
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:31:22.26
+GET
+500
+tok-saver.vercel.app
+/api/admin/stats
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue. Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:30:58.02
+GET
+500
+tok-saver.vercel.app
+/api/admin/stats
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:30:58.02
+GET
+500
+tok-saver.vercel.app
+/api/admin/users
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:30:58.02
+GET
+500
+tok-saver.vercel.app
+/api/admin/settings
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:30:41.57
+GET
+500
+tok-saver.vercel.app
+/api/admin/settings
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:30:41.57
+GET
+500
+tok-saver.vercel.app
+/api/admin/stats
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:30:41.57
+GET
+500
+tok-saver.vercel.app
+/api/admin/users
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue. Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:23:08.95
+GET
+500
+tok-saver.vercel.app
+/api/admin/settings
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:23:08.95
+GET
+500
+tok-saver.vercel.app
+/api/admin/users
+Error [ERR_REQUIRE_ESM]: require() of ES Module /var/task/api/_bundle/app.mjs from /var/task/api/index.js not supported. Instead change the require of /var/task/api/_bundle/app.mjs to a dynamic import() which is available in all CommonJS modules. at /opt/rust/nodejs.js:2:13531 at Module.pn (/opt/rust/nodejs.js:2:13909) at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501) at TracingChannel.traceSync (node:diagnostics_channel:328:14) { code: 'ERR_REQUIRE_ESM' } Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 10 13:23:08.95
+GET
+500
+tok-saver.vercel.app
+/api/admin/stats
+Erro
