@@ -598,6 +598,8 @@ components:
           type: string
         paylorApiUrl:
           type: string
+        paylorChannelId:
+          type: string
         adminKey:
           type: string
         freeDownloadsPerUser:
@@ -607,6 +609,7 @@ components:
         - currency
         - paylorApiKey
         - paylorApiUrl
+        - paylorChannelId
         - adminKey
         - freeDownloadsPerUser
 
@@ -620,6 +623,8 @@ components:
         paylorApiKey:
           type: ["string", "null"]
         paylorApiUrl:
+          type: ["string", "null"]
+        paylorChannelId:
           type: ["string", "null"]
         adminKey:
           type: ["string", "null"]

@@ -111,6 +111,7 @@ export interface AdminSettings {
   currency: string;
   paylorApiKey: string;
   paylorApiUrl: string;
+  paylorChannelId: string;
   adminKey: string;
   freeDownloadsPerUser: number;
 }
@@ -124,6 +125,8 @@ export interface AdminSettingsUpdate {
   paylorApiKey?: string | null;
   /** @nullable */
   paylorApiUrl?: string | null;
+  /** @nullable */
+  paylorChannelId?: string | null;
   /** @nullable */
   adminKey?: string | null;
   /** @nullable */

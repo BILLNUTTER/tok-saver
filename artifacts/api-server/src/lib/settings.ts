@@ -6,6 +6,7 @@ const STATIC_DEFAULTS: Record<string, string> = {
   currency: "KES",
   paylor_api_key: "",
   paylor_api_url: "https://paylor.webnixke.com/",
+  paylor_channel_id: "",
   free_downloads_per_user: "1",
 };
 

@@ -169,6 +169,7 @@ export const AdminGetSettingsResponse = zod.object({
   currency: zod.string(),
   paylorApiKey: zod.string(),
   paylorApiUrl: zod.string(),
+  paylorChannelId: zod.string(),
   adminKey: zod.string(),
   freeDownloadsPerUser: zod.number(),
 });
@@ -186,6 +187,7 @@ export const AdminUpdateSettingsBody = zod.object({
   currency: zod.string().nullish(),
   paylorApiKey: zod.string().nullish(),
   paylorApiUrl: zod.string().nullish(),
+  paylorChannelId: zod.string().nullish(),
   adminKey: zod.string().nullish(),
   freeDownloadsPerUser: zod.number().nullish(),
 });
@@ -195,6 +197,7 @@ export const AdminUpdateSettingsResponse = zod.object({
   currency: zod.string(),
   paylorApiKey: zod.string(),
   paylorApiUrl: zod.string(),
+  paylorChannelId: zod.string(),
   adminKey: zod.string(),
   freeDownloadsPerUser: zod.number(),
 });

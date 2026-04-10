@@ -56,6 +56,7 @@ router.post("/subscription/subscribe", requireAuth, async (req, res): Promise<vo
   const currency = await getSetting("currency");
   const paylorApiKey = await getSetting("paylor_api_key");
   const paylorApiUrl = await getSetting("paylor_api_url");
+  const paylorChannelId = await getSetting("paylor_channel_id");
 
   if (!paylorApiKey || !paylorApiUrl) {
     res.status(500).json({ error: "Payment gateway not configured" });
@@ -91,7 +92,7 @@ router.post("/subscription/subscribe", requireAuth, async (req, res): Promise<vo
     // paymentUrl and never sees the token.
     const callbackUrl = `${appUrl}/api/subscription/callback?token=${callbackToken}`;
 
-    const paymentPayload = {
+    const paymentPayload: Record<string, unknown> = {
       amount,
       currency,
       reference,
@@ -101,6 +102,11 @@ router.post("/subscription/subscribe", requireAuth, async (req, res): Promise<vo
       callback_url: callbackUrl,
       description: "TikTok Downloader Monthly Subscription",
     };
+
+    // channelId is required by Paylor to identify your merchant channel
+    if (paylorChannelId) {
+      paymentPayload.channelId = paylorChannelId;
+    }
 
     const paylorResponse = await fetch(`${paylorApiUrl}api/pay`, {
       method: "POST",

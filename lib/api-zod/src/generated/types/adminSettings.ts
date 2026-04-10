@@ -11,6 +11,7 @@ export interface AdminSettings {
   currency: string;
   paylorApiKey: string;
   paylorApiUrl: string;
+  paylorChannelId: string;
   adminKey: string;
   freeDownloadsPerUser: number;
 }

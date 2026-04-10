@@ -16,6 +16,8 @@ export interface AdminSettingsUpdate {
   /** @nullable */
   paylorApiUrl?: string | null;
   /** @nullable */
+  paylorChannelId?: string | null;
+  /** @nullable */
   adminKey?: string | null;
   /** @nullable */
   freeDownloadsPerUser?: number | null;

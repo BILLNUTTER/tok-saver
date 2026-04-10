@@ -52,7 +52,8 @@ router.get("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
     currency: settings.currency ?? "KES",
     paylorApiKey: settings.paylor_api_key ?? "",
     paylorApiUrl: settings.paylor_api_url ?? "https://paylor.webnixke.com/",
-    adminKey: settings.admin_key ?? "admin123",
+    paylorChannelId: settings.paylor_channel_id ?? "",
+    adminKey: settings.admin_key ?? "",
     freeDownloadsPerUser: Number(settings.free_downloads_per_user ?? 1),
   });
 });
@@ -77,6 +78,9 @@ router.put("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
   if (updates.paylorApiUrl != null) {
     await setSetting("paylor_api_url", updates.paylorApiUrl);
   }
+  if (updates.paylorChannelId != null) {
+    await setSetting("paylor_channel_id", updates.paylorChannelId);
+  }
   if (updates.adminKey != null) {
     await setSetting("admin_key", updates.adminKey);
   }
@@ -90,7 +94,8 @@ router.put("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
     currency: settings.currency ?? "KES",
     paylorApiKey: settings.paylor_api_key ?? "",
     paylorApiUrl: settings.paylor_api_url ?? "https://paylor.webnixke.com/",
-    adminKey: settings.admin_key ?? "admin123",
+    paylorChannelId: settings.paylor_channel_id ?? "",
+    adminKey: settings.admin_key ?? "",
     freeDownloadsPerUser: Number(settings.free_downloads_per_user ?? 1),
   });
 });

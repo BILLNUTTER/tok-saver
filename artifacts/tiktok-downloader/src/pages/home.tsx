@@ -39,8 +39,9 @@ const adminKeySchema = z.object({
 const settingsSchema = z.object({
   subscriptionPrice: z.coerce.number().min(0),
   currency: z.string().min(1),
-  paylorApiKey: z.string().min(1),
+  paylorApiKey: z.string(),
   paylorApiUrl: z.string().url(),
+  paylorChannelId: z.string(),
   adminKey: z.string().min(1),
   freeDownloadsPerUser: z.coerce.number().min(0),
 });
@@ -387,9 +388,10 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
     resolver: zodResolver(settingsSchema),
     defaultValues: {
       subscriptionPrice: 0,
-      currency: "KSH",
+      currency: "KES",
       paylorApiKey: "",
-      paylorApiUrl: "",
+      paylorApiUrl: "https://paylor.webnixke.com/",
+      paylorChannelId: "",
       adminKey: "",
       freeDownloadsPerUser: 1
     },
@@ -591,6 +593,14 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
                           <FormItem>
                             <FormLabel>API Key</FormLabel>
                             <FormControl><Input type="password" {...field} data-testid="input-setting-paylor-key" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={settingsForm.control} name="paylorChannelId" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Channel ID</FormLabel>
+                            <FormControl><Input {...field} placeholder="e.g. PAYL-XJ7K2P" data-testid="input-setting-paylor-channel" /></FormControl>
+                            <FormDescription className="text-xs text-muted-foreground mt-1">Your Paylor merchant channel ID (found in your Paylor dashboard).</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )} />

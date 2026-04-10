@@ -1,6 +1,10 @@
-import { useState, useEffect, useCallback, createContext, useContext } from "react";
+import { useState, useCallback, createContext, useContext } from "react";
 import { setAuthTokenGetter, useGetMe, getGetMeQueryKey, logout as apiLogout } from "@workspace/api-client-react";
 import type { UserResponse } from "@workspace/api-client-react";
+
+// Set the token getter synchronously at module load time so that the very
+// first useGetMe query (which runs before any useEffect) already has it.
+setAuthTokenGetter(() => localStorage.getItem("auth_token"));
 
 interface AuthState {
   token: string | null;
@@ -25,18 +29,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  useEffect(() => {
-    setAuthTokenGetter(() => localStorage.getItem("auth_token"));
-  }, []);
-
   const login = useCallback((newToken: string) => {
     localStorage.setItem("auth_token", newToken);
     setTokenState(newToken);
   }, []);
 
   const logout = useCallback(() => {
-    // Revoke the token server-side so it cannot be reused even if intercepted.
-    // Fire-and-forget — we clear the local state regardless of network outcome.
     apiLogout().catch(() => {});
     localStorage.removeItem("auth_token");
     setTokenState(null);
