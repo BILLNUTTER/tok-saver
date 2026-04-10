@@ -23,11 +23,12 @@ import {
 } from "@workspace/api-client-react";
 import { ApiError, getApiErrorMessage } from "@/lib/api-error";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Download, History, Settings, Users, BarChart3, Lock, CheckCircle2, AlertCircle, ShieldOff, ShieldCheck, Trash2, ArrowUpCircle } from "lucide-react";
+import { Loader2, Download, History, Settings, Users, BarChart3, Lock, CheckCircle2, AlertCircle, ShieldOff, ShieldCheck, Trash2, ArrowUpCircle, HardDriveDownload } from "lucide-react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertDialog,
@@ -134,11 +135,70 @@ function DownloadInterface() {
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
   const [downloadResult, setDownloadResult] = useState<{url: string, title?: string | null, thumbnail?: string | null} | null>(null);
+  const [saveProgress, setSaveProgress] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const { data: subStatus, refetch: refetchSubStatus } = useGetSubscriptionStatus();
   const { data: history, refetch: refetchHistory } = useGetDownloadHistory();
   
   const downloadMutation = useDownloadVideo();
+
+  function saveVideoToDevice(videoUrl: string, title?: string | null) {
+    const token = localStorage.getItem("auth_token");
+    const apiBase = (import.meta.env.VITE_API_URL as string | undefined) || "";
+    const safeFilename = (title || "tiktok-video")
+      .replace(/[^a-zA-Z0-9_\-\s]/g, "")
+      .trim()
+      .replace(/\s+/g, "-")
+      .slice(0, 60) || "tiktok-video";
+    const proxyUrl = `${apiBase}/api/download-proxy?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(safeFilename + ".mp4")}`;
+
+    setIsSaving(true);
+    setSaveProgress(0);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", proxyUrl, true);
+    xhr.responseType = "blob";
+    if (token) {
+      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    }
+
+    xhr.onprogress = (event) => {
+      if (event.lengthComputable && event.total > 0) {
+        setSaveProgress(Math.round((event.loaded / event.total) * 100));
+      } else {
+        // Indeterminate — pulse at a slow crawl so it looks alive
+        setSaveProgress((prev) => (prev !== null && prev < 90 ? prev + 1 : prev ?? 10));
+      }
+    };
+
+    xhr.onload = () => {
+      setIsSaving(false);
+      setSaveProgress(null);
+      if (xhr.status === 200) {
+        const blob = xhr.response as Blob;
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = safeFilename + ".mp4";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        toast({ title: "Saved!", description: "Video saved to your device." });
+      } else {
+        toast({ variant: "destructive", title: "Save failed", description: "Could not download the video file. Try again." });
+      }
+    };
+
+    xhr.onerror = () => {
+      setIsSaving(false);
+      setSaveProgress(null);
+      toast({ variant: "destructive", title: "Save failed", description: "Network error while downloading. Try again." });
+    };
+
+    xhr.send();
+  }
 
   const form = useForm<z.infer<typeof downloadSchema>>({
     resolver: zodResolver(downloadSchema),
@@ -264,11 +324,25 @@ function DownloadInterface() {
               
               <div className="flex-1 flex flex-col justify-center space-y-4 w-full">
                 <h4 className="font-semibold line-clamp-2">{downloadResult.title || "TikTok Video"}</h4>
-                <Button asChild className="w-full sm:w-auto" data-testid="link-save-video">
-                  <a href={downloadResult.url} download target="_blank" rel="noreferrer">
-                    Save Video File
-                  </a>
-                </Button>
+
+                {isSaving ? (
+                  <div className="space-y-2 w-full sm:max-w-xs">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Saving to device{saveProgress !== null ? ` — ${saveProgress}%` : "…"}</span>
+                    </div>
+                    <Progress value={saveProgress ?? 0} className="h-2" />
+                  </div>
+                ) : (
+                  <Button
+                    className="w-full sm:w-auto"
+                    onClick={() => saveVideoToDevice(downloadResult.url, downloadResult.title)}
+                    data-testid="link-save-video"
+                  >
+                    <HardDriveDownload className="w-4 h-4 mr-2" />
+                    Save to Device
+                  </Button>
+                )}
               </div>
             </div>
           )}

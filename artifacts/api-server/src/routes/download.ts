@@ -5,6 +5,7 @@ import { requireAuth } from "../middlewares/requireAuth";
 import { DownloadVideoBody } from "@workspace/api-zod";
 import { fetchTikTokVideo } from "../lib/tiktok";
 import { getSetting } from "../lib/settings";
+import { Readable } from "node:stream";
 
 const router: IRouter = Router();
 
@@ -92,4 +93,85 @@ router.get("/downloads/history", requireAuth, async (req, res): Promise<void> =>
   );
 });
 
+// Proxy a video URL through the server so the browser can download it with
+// a proper Content-Length header (needed for XHR progress tracking) and
+// without CORS restrictions from the CDN.
+const ALLOWED_PROXY_HOSTS = [
+  "tikcdn.io",
+  "tikwm.com",
+  "tiktokcdn.com",
+  "tiktokcdn-eu.com",
+  "tiktokcdn-us.com",
+  "akamaized.net",
+  "v19-webapp.tiktok.com",
+  "v19.tiktokcdn.com",
+];
+
+router.get("/download-proxy", requireAuth, async (req, res): Promise<void> => {
+  const rawUrl = typeof req.query.url === "string" ? req.query.url : null;
+  const filename = typeof req.query.filename === "string" ? req.query.filename : "tiktok-video.mp4";
+
+  if (!rawUrl) {
+    res.status(400).json({ error: "Missing url query parameter" });
+    return;
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    res.status(400).json({ error: "Invalid URL" });
+    return;
+  }
+
+  if (parsed.protocol !== "https:") {
+    res.status(400).json({ error: "Only HTTPS URLs are allowed" });
+    return;
+  }
+
+  const hostname = parsed.hostname;
+  const allowed = ALLOWED_PROXY_HOSTS.some((h) => hostname === h || hostname.endsWith("." + h));
+  if (!allowed) {
+    res.status(400).json({ error: "URL host not allowed" });
+    return;
+  }
+
+  try {
+    const upstream = await fetch(rawUrl, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; TokSaver/1.0)" },
+    });
+
+    if (!upstream.ok) {
+      res.status(502).json({ error: "Failed to fetch video from source" });
+      return;
+    }
+
+    const contentType = upstream.headers.get("content-type") || "video/mp4";
+    const contentLength = upstream.headers.get("content-length");
+
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Cache-Control", "no-store");
+    if (contentLength) {
+      res.setHeader("Content-Length", contentLength);
+    }
+
+    // Pipe the web ReadableStream through Node's stream to the HTTP response
+    if (upstream.body) {
+      const nodeStream = Readable.fromWeb(upstream.body as Parameters<typeof Readable.fromWeb>[0]);
+      nodeStream.pipe(res);
+      nodeStream.on("error", (err) => {
+        req.log.error({ err }, "Proxy stream error");
+        if (!res.headersSent) res.status(502).end();
+      });
+    } else {
+      res.status(502).json({ error: "No body from source" });
+    }
+  } catch (err) {
+    req.log.error({ err }, "download-proxy fetch error");
+    res.status(502).json({ error: "Failed to proxy video" });
+  }
+});
+
 export default router;
+
