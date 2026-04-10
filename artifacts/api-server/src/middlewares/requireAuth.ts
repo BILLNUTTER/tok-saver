@@ -28,14 +28,29 @@ export async function requireAuth(
     res.status(401).json({ error: "Invalid or expired token" });
     return;
   }
+
   const [user] = await db
-    .select({ id: usersTable.id, email: usersTable.email })
+    .select({ id: usersTable.id, email: usersTable.email, tokensRevokedBefore: usersTable.tokensRevokedBefore })
     .from(usersTable)
     .where(eq(usersTable.id, payload.userId));
+
   if (!user) {
     res.status(401).json({ error: "User not found" });
     return;
   }
+
+  // Check if this token was issued before the user's last logout.
+  // tokensRevokedBefore is set to NOW() on logout, invalidating all earlier tokens.
+  if (user.tokensRevokedBefore && payload.iat !== undefined) {
+    // JWT iat is in whole seconds; tokensRevokedBefore has millisecond precision.
+    // Use <= so that tokens issued in the same second as the logout are also blocked.
+    const revokedBeforeUnix = Math.floor(user.tokensRevokedBefore.getTime() / 1000);
+    if (payload.iat <= revokedBeforeUnix) {
+      res.status(401).json({ error: "Token has been revoked. Please log in again." });
+      return;
+    }
+  }
+
   req.userId = user.id;
   req.userEmail = user.email;
   next();

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -395,6 +395,13 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
     },
   });
 
+  // Populate the settings form once data loads from the API.
+  useEffect(() => {
+    if (settings) {
+      settingsForm.reset(settings);
+    }
+  }, [settings, settingsForm]);
+
   // Handle unauthorized admin key
   if (statsError instanceof ApiError && statsError.status === 401) {
     onLogout();
@@ -545,12 +552,6 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
                     );
                   })} className="space-y-6">
                     
-                    {/* Hack to set default values once data loads */}
-                    {settings && settingsForm.getValues("adminKey") === "" && (() => {
-                      settingsForm.reset(settings);
-                      return null;
-                    })()}
-
                     <div className="grid grid-cols-2 gap-4">
                       <FormField control={settingsForm.control} name="subscriptionPrice" render={({ field }) => (
                         <FormItem>

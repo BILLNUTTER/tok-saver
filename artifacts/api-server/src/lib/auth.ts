@@ -11,9 +11,10 @@ function getJwtSecret(): string {
 export interface JwtPayload {
   userId: number;
   email: string;
+  iat?: number;
 }
 
-export function signToken(payload: JwtPayload): string {
+export function signToken(payload: Omit<JwtPayload, "iat">): string {
   return jwt.sign(payload, getJwtSecret(), { expiresIn: "30d" });
 }
 

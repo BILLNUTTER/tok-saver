@@ -112,7 +112,14 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   });
 });
 
-router.post("/auth/logout", async (_req, res): Promise<void> => {
+router.post("/auth/logout", requireAuth, async (req, res): Promise<void> => {
+  // Revoke all tokens for this user issued before now.
+  // Any JWT with iat < tokensRevokedBefore will be rejected by requireAuth.
+  await db
+    .update(usersTable)
+    .set({ tokensRevokedBefore: new Date() })
+    .where(eq(usersTable.id, req.userId!));
+
   res.json({ message: "Logged out successfully" });
 });
 
