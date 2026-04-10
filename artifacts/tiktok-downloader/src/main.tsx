@@ -3,12 +3,9 @@ import { setBaseUrl } from "@workspace/api-client-react";
 import App from "./App";
 import "./index.css";
 
-// In production (Vercel), VITE_API_URL points to the deployed API server.
-// In development (Replit), the dev proxy routes /api to the local API server,
-// so no base URL override is needed.
-const apiUrl = import.meta.env.VITE_API_URL;
-if (apiUrl) {
-  setBaseUrl(apiUrl);
-}
+// The API is served at /api on the same host as the frontend — no configuration
+// needed. VITE_API_URL can optionally override this for non-standard setups.
+const apiUrl = import.meta.env.VITE_API_URL ?? null;
+setBaseUrl(apiUrl);
 
 createRoot(document.getElementById("root")!).render(<App />);

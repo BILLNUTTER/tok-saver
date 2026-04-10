@@ -6,6 +6,10 @@ import { logger } from "./lib/logger";
 
 const app: Express = express();
 
+// Trust the Replit/reverse-proxy forwarded headers so req.hostname,
+// req.protocol, and x-forwarded-* reflect the real public URL.
+app.set("trust proxy", true);
+
 app.use(
   pinoHttp({
     logger,

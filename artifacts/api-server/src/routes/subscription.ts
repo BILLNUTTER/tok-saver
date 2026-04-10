@@ -92,15 +92,17 @@ router.post("/subscription/subscribe", requireAuth, async (req, res): Promise<vo
   });
 
   try {
-    // Derive the public base URL of this API server.
-    // Priority: APP_URL env var → Replit dev domain (auto) → empty string
-    const replitDevDomain = process.env.REPLIT_DEV_DOMAIN;
-    const appUrl = process.env.APP_URL
-      ?? (replitDevDomain ? `https://${replitDevDomain}/api-server` : "");
-
-    if (!appUrl) {
-      req.log.error("APP_URL / REPLIT_DEV_DOMAIN not set — callback URL will be empty");
-    }
+    // Derive the public base URL automatically from the incoming request.
+    // Works in every environment (Replit dev, Replit deployed, Vercel, etc.)
+    // without any manual configuration. APP_URL env var can override if needed.
+    const forwardedProto =
+      (req.headers["x-forwarded-proto"] as string)?.split(",")[0]?.trim()
+      ?? req.protocol
+      ?? "https";
+    const forwardedHost =
+      (req.headers["x-forwarded-host"] as string)?.split(",")[0]?.trim()
+      ?? req.hostname;
+    const appUrl = process.env.APP_URL ?? `${forwardedProto}://${forwardedHost}`;
 
     // The secret token is embedded in the callback URL, not the body.
     // Paylor will POST back to this URL; the user is only redirected to
