@@ -175,8 +175,9 @@ router.post("/subscription/callback", async (req, res): Promise<void> => {
   const webhookSecret = await getSetting("paylor_webhook_secret");
   if (webhookSecret) {
     const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
-    // Try the header names Paylor may use
+    // Paylor sends the signature in X-Payment-Signature header
     const sigHeader = (
+      req.headers["x-payment-signature"] ??
       req.headers["x-paylor-signature"] ??
       req.headers["x-webhook-signature"] ??
       req.headers["x-signature"] ??
