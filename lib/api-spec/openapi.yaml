@@ -951,6 +951,9 @@ components:
           type: string
         paylorChannelId:
           type: string
+        paylorWebhookSecret:
+          type: string
+          description: "Webhook secret from Paylor dashboard. Used to verify incoming webhook signatures."
         appUrl:
           type: string
           description: "Public URL of this app (e.g. https://yourapp.vercel.app). Used to build the Paylor callback URL."
@@ -964,6 +967,7 @@ components:
         - paylorApiKey
         - paylorApiUrl
         - paylorChannelId
+        - paylorWebhookSecret
         - appUrl
         - adminKey
         - freeDownloadsPerUser
@@ -980,6 +984,8 @@ components:
         paylorApiUrl:
           type: ["string", "null"]
         paylorChannelId:
+          type: ["string", "null"]
+        paylorWebhookSecret:
           type: ["string", "null"]
         appUrl:
           type: ["string", "null"]

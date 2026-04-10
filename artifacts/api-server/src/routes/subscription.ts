@@ -1,5 +1,5 @@
-import { Router, type IRouter } from "express";
-import { randomUUID } from "crypto";
+import { Router, type IRouter, type Request } from "express";
+import { randomUUID, createHmac, timingSafeEqual } from "crypto";
 import { db, subscriptionsTable, downloadsTable, usersTable } from "@workspace/db";
 import { eq, and, gt, count, desc } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
@@ -171,6 +171,43 @@ router.post("/subscription/subscribe", requireAuth, async (req, res): Promise<vo
 // strip query parameters from the callback URL.
 // ---------------------------------------------------------------------------
 router.post("/subscription/callback", async (req, res): Promise<void> => {
+  // Verify Paylor webhook signature if a secret has been configured
+  const webhookSecret = await getSetting("paylor_webhook_secret");
+  if (webhookSecret) {
+    const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
+    // Try the header names Paylor may use
+    const sigHeader = (
+      req.headers["x-paylor-signature"] ??
+      req.headers["x-webhook-signature"] ??
+      req.headers["x-signature"] ??
+      ""
+    ) as string;
+
+    req.log.error({ sigHeader: sigHeader.slice(0, 80) }, "Paylor webhook signature header");
+
+    if (sigHeader && rawBody) {
+      const payload = rawBody.toString("utf8");
+      // Support "sha256=<hex>" format or raw hex
+      const receivedHex = sigHeader.startsWith("sha256=") ? sigHeader.slice(7) : sigHeader;
+      const expected = createHmac("sha256", webhookSecret).update(payload).digest("hex");
+      try {
+        const match = timingSafeEqual(Buffer.from(receivedHex, "hex"), Buffer.from(expected, "hex"));
+        if (!match) {
+          req.log.error({ receivedHex, expected }, "Paylor webhook signature mismatch — rejecting");
+          res.status(401).json({ error: "Invalid signature" });
+          return;
+        }
+        req.log.error({}, "Paylor webhook signature verified OK");
+      } catch {
+        req.log.error({ receivedHex, expected }, "Paylor webhook signature comparison failed");
+        res.status(401).json({ error: "Invalid signature" });
+        return;
+      }
+    } else {
+      req.log.error({ hasSigHeader: !!sigHeader, hasRawBody: !!rawBody }, "Paylor webhook: secret configured but no signature header or raw body — proceeding without verification");
+    }
+  }
+
   req.log.info({ rawBody: req.body, query: req.query }, "Paylor raw callback received");
 
   // Accept any field name Paylor might use for reference and status.

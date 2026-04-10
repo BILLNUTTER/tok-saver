@@ -62,6 +62,7 @@ const settingsSchema = z.object({
   paylorApiKey: z.string(),
   paylorApiUrl: z.string().url(),
   paylorChannelId: z.string(),
+  paylorWebhookSecret: z.string(),
   appUrl: z.string(),
   adminKey: z.string().min(1),
   freeDownloadsPerUser: z.coerce.number().min(0),
@@ -595,6 +596,7 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
       paylorApiKey: "",
       paylorApiUrl: "https://api.paylorke.com/api/v1",
       paylorChannelId: "",
+      paylorWebhookSecret: "",
       appUrl: "",
       adminKey: "",
       freeDownloadsPerUser: 1
@@ -1082,6 +1084,24 @@ function AdminPanel({ adminKey, onLogout }: { adminKey: string, onLogout: () => 
                             </FormControl>
                             <FormDescription className="text-xs">
                               Your merchant channel ID from the Paylor dashboard under <strong>Channels</strong>. This tells Paylor which M-Pesa till/paybill to route payments to.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+
+                        <FormField control={settingsForm.control} name="paylorWebhookSecret" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Webhook Secret</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="password"
+                                placeholder="Paste the secret Paylor gave you"
+                                data-testid="input-setting-paylor-webhook-secret"
+                              />
+                            </FormControl>
+                            <FormDescription className="text-xs">
+                              After adding the webhook URL in your Paylor dashboard, Paylor shows a <strong>webhook secret</strong>. Paste it here — it lets the server verify that incoming payment notifications are genuine and not forged.
                             </FormDescription>
                             <FormMessage />
                           </FormItem>

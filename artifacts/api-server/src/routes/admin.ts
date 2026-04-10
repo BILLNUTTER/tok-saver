@@ -232,6 +232,7 @@ router.get("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
     paylorApiKey: settings.paylor_api_key ?? "",
     paylorApiUrl: settings.paylor_api_url ?? "https://api.paylorke.com/api/v1",
     paylorChannelId: settings.paylor_channel_id ?? "",
+    paylorWebhookSecret: settings.paylor_webhook_secret ?? "",
     appUrl: settings.app_url ?? process.env.APP_URL ?? "",
     adminKey: settings.admin_key ?? "",
     freeDownloadsPerUser: Number(settings.free_downloads_per_user ?? 1),
@@ -261,6 +262,9 @@ router.put("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
   if (updates.paylorChannelId != null) {
     await setSetting("paylor_channel_id", updates.paylorChannelId);
   }
+  if (updates.paylorWebhookSecret != null) {
+    await setSetting("paylor_webhook_secret", updates.paylorWebhookSecret);
+  }
   if (updates.appUrl != null) {
     await setSetting("app_url", updates.appUrl);
   }
@@ -278,6 +282,7 @@ router.put("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
     paylorApiKey: settings.paylor_api_key ?? "",
     paylorApiUrl: settings.paylor_api_url ?? "https://api.paylorke.com/api/v1",
     paylorChannelId: settings.paylor_channel_id ?? "",
+    paylorWebhookSecret: settings.paylor_webhook_secret ?? "",
     appUrl: settings.app_url ?? process.env.APP_URL ?? "",
     adminKey: settings.admin_key ?? "",
     freeDownloadsPerUser: Number(settings.free_downloads_per_user ?? 1),
