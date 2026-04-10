@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useGetSubscriptionStatus, useInitiateSubscription, useVerifyPayment } from "@workspace/api-client-react";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Check, ArrowLeft, Smartphone, ShieldCheck, Info, RefreshCw } from "lucide-react";
+import { Loader2, Check, ArrowLeft, Smartphone, ShieldCheck, Info } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 
 export default function Subscribe() {
@@ -23,7 +23,7 @@ export default function Subscribe() {
   const [phoneEdited, setPhoneEdited] = useState(false);
   const [stkSent, setStkSent] = useState(false);
   const [secondsElapsed, setSecondsElapsed] = useState(0);
-  const [manualChecked, setManualChecked] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -34,60 +34,40 @@ export default function Subscribe() {
   }, [user, userLoading, setLocation, toast]);
 
   useEffect(() => {
-    if (user?.phone && !phoneEdited) {
-      setPayPhone(user.phone);
-    }
+    if (user?.phone && !phoneEdited) setPayPhone(user.phone);
   }, [user?.phone, phoneEdited]);
 
-  // Tick a seconds counter so UI can show elapsed time
+  // Seconds counter for UX
   useEffect(() => {
     if (!stkSent) { setSecondsElapsed(0); return; }
-    const timer = setInterval(() => setSecondsElapsed((s) => s + 1), 1000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setSecondsElapsed((s) => s + 1), 1000);
+    return () => clearInterval(t);
   }, [stkSent]);
 
-  // Auto-poll DB every 5 seconds after STK push for up to 3 minutes
+  // Poll DB every 2 seconds — redirect the moment payment is confirmed
   useEffect(() => {
-    if (!stkSent) {
-      if (pollRef.current) clearInterval(pollRef.current);
-      return;
-    }
-    // Start polling after 5 seconds
+    if (!stkSent) return;
+    setTimedOut(false);
     const start = Date.now();
+    const TIMEOUT = 3 * 60 * 1000; // 3 minutes
     pollRef.current = setInterval(() => {
-      if (Date.now() - start > 3 * 60 * 1000) {
+      if (Date.now() - start >= TIMEOUT) {
         clearInterval(pollRef.current!);
+        setTimedOut(true);
         return;
       }
       verifyMutation.mutate(undefined, {
         onSuccess: (data) => {
           if (data.isActive) {
             clearInterval(pollRef.current!);
-            toast({ title: "Payment confirmed!", description: "Your Pro subscription is now active." });
+            toast({ title: "🎉 Payment confirmed!", description: "Your Pro subscription is now active." });
             setLocation("/");
           }
         },
       });
-    }, 5000);
+    }, 2000);
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [stkSent]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleManualCheck = () => {
-    setManualChecked(false);
-    verifyMutation.mutate(undefined, {
-      onSuccess: (data) => {
-        if (data.isActive) {
-          toast({ title: "Payment confirmed!", description: "Your Pro subscription is now active." });
-          setLocation("/");
-        } else {
-          setManualChecked(true);
-        }
-      },
-      onError: (err) => {
-        toast({ variant: "destructive", title: "Verification failed", description: getApiErrorMessage(err) });
-      },
-    });
-  };
 
   if (userLoading || subLoading) {
     return (
@@ -115,69 +95,63 @@ export default function Subscribe() {
   }
 
   if (stkSent) {
-    const autoPolling = secondsElapsed < 3 * 60;
     return (
       <div className="flex-1 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md text-center shadow-lg border-primary/20">
-          <CardContent className="pt-8 pb-8 space-y-5">
-            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
-              <Smartphone className="w-8 h-8 text-primary" />
-            </div>
+        <Card className="w-full max-w-sm text-center shadow-xl border-primary/20">
+          <CardContent className="pt-10 pb-10 space-y-6">
 
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold">Check Your Phone</h2>
-              <p className="text-muted-foreground text-sm">
-                An M-Pesa prompt was sent to <strong>{payPhone}</strong>.{" "}
-                Enter your M-Pesa PIN to complete the payment.
-              </p>
-            </div>
+            {timedOut ? (
+              /* Timed out — show support fallback */
+              <>
+                <div className="w-16 h-16 rounded-full bg-amber-400/10 flex items-center justify-center mx-auto">
+                  <Smartphone className="w-8 h-8 text-amber-400" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl font-bold">Taking longer than usual</h2>
+                  <p className="text-muted-foreground text-sm">
+                    If you completed the M-Pesa payment, please contact support and we'll activate your account.
+                  </p>
+                  <a href="mailto:nutterxtech@gmail.com" className="text-primary text-sm font-semibold hover:underline block mt-2">
+                    nutterxtech@gmail.com
+                  </a>
+                </div>
+                <Button variant="outline" className="w-full" onClick={() => { setStkSent(false); setTimedOut(false); }}>
+                  Try Again
+                </Button>
+              </>
+            ) : (
+              /* Waiting — spinner only */
+              <>
+                <div className="relative w-20 h-20 mx-auto">
+                  <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" />
+                  <div className="relative w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Loader2 className="w-9 h-9 text-primary animate-spin" />
+                  </div>
+                </div>
 
-            {/* Auto-checking status */}
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg px-4 py-3">
-              {autoPolling ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />
-                  Checking payment automatically… ({secondsElapsed}s)
-                </>
-              ) : (
-                <span>Auto-check stopped. Use the button below.</span>
-              )}
-            </div>
+                <div className="space-y-1.5">
+                  <h2 className="text-xl font-bold">Waiting for payment…</h2>
+                  <p className="text-muted-foreground text-sm">
+                    Enter your M-Pesa PIN on <strong>{payPhone}</strong>.<br />
+                    This will confirm automatically.
+                  </p>
+                </div>
 
-            {/* Manual check */}
-            <div className="space-y-3">
-              <Button
-                size="lg"
-                className="w-full font-semibold gap-2"
-                onClick={handleManualCheck}
-                disabled={verifyMutation.isPending}
-                data-testid="button-check-payment"
-              >
-                {verifyMutation.isPending ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /> Checking…</>
-                ) : (
-                  <><RefreshCw className="w-5 h-5" /> I've Paid — Check Now</>
-                )}
-              </Button>
-
-              {manualChecked && (
-                <p className="text-sm text-amber-400 bg-amber-400/10 rounded-lg px-4 py-2">
-                  Payment not confirmed yet. Make sure you completed the M-Pesa prompt, then tap the button again.
-                  If you're sure you paid, contact support at{" "}
-                  <a href="mailto:nutterxtech@gmail.com" className="underline">nutterxtech@gmail.com</a>.
+                <p className="text-xs text-muted-foreground tabular-nums">
+                  {secondsElapsed}s elapsed
                 </p>
-              )}
-            </div>
 
-            <div className="flex items-center gap-2 pt-1">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-muted-foreground">or</span>
-              <div className="flex-1 h-px bg-border" />
-            </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground text-xs"
+                  onClick={() => { if (pollRef.current) clearInterval(pollRef.current); setStkSent(false); }}
+                >
+                  Didn't get prompt? Send again
+                </Button>
+              </>
+            )}
 
-            <Button variant="outline" size="sm" className="w-full" onClick={() => { setStkSent(false); setManualChecked(false); }}>
-              Send prompt again
-            </Button>
           </CardContent>
         </Card>
       </div>
