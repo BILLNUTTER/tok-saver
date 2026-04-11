@@ -142,7 +142,7 @@ function unsubscribeFooter(userId: number): string {
 // ─── App Logo Mark ────────────────────────────────────────────────────────────
 // Renders the TokSaver brand logo above the email body — no image required.
 
-function userAvatar(_name: string): string {
+function appLogoMark(): string {
   return `
     <div style="text-align:center;margin-bottom:28px;">
       <div style="display:inline-block;background:#111111;border-radius:14px;padding:14px 24px;
@@ -164,7 +164,7 @@ export async function sendWelcomeEmail(name: string, email: string): Promise<voi
   const firstName = name.split(" ")[0];
 
   const body = `
-    ${userAvatar(name)}
+    ${appLogoMark()}
     <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;text-align:center;">Welcome to TokSaver, ${firstName}.</h2>
     <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Your account is ready — let's get your first video.</p>
 
@@ -239,7 +239,7 @@ export async function sendResetCodeEmail(
   const firstName = name.split(" ")[0];
 
   const body = `
-    ${userAvatar(name)}
+    ${appLogoMark()}
     <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;text-align:center;">Password reset request</h2>
     <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Hi ${firstName}, we received a request to reset your TokSaver password.</p>
 
@@ -291,7 +291,7 @@ export async function sendVerificationCodeEmail(
   const firstName = name.split(" ")[0];
 
   const body = `
-    ${userAvatar(name)}
+    ${appLogoMark()}
     <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;text-align:center;">Verify your email</h2>
     <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Hi ${firstName}, thanks for signing up. Enter the code below to confirm your email address.</p>
 
@@ -349,7 +349,7 @@ export async function sendSubscriptionConfirmedEmail(
   });
 
   const body = `
-    ${userAvatar(name)}
+    ${appLogoMark()}
     <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;text-align:center;">You're now a Pro subscriber!</h2>
     <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Hi ${firstName}, your M-Pesa payment was received. Your subscription is active.</p>
 
@@ -417,7 +417,7 @@ export async function sendSubscriptionExpiredEmail(
   const footer = unsubscribeFooter(userId);
 
   const body = `
-    ${userAvatar(name)}
+    ${appLogoMark()}
     <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;text-align:center;">Your subscription has ended</h2>
     <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Hi ${firstName}, your ${planLabel} plan has expired.</p>
 
@@ -470,7 +470,7 @@ export async function sendMorningReminderEmail(
 
   const body = hasFreeDl
     ? `
-      ${userAvatar(name)}
+      ${appLogoMark()}
       <h2 style="margin:0 0 6px;font-size:21px;font-weight:800;color:#111;text-align:center;">Good morning, ${firstName}.</h2>
       <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Start your day with a quick TikTok download.</p>
 
@@ -492,7 +492,7 @@ export async function sendMorningReminderEmail(
       </p>
     `
     : `
-      ${userAvatar(name)}
+      ${appLogoMark()}
       <h2 style="margin:0 0 6px;font-size:21px;font-weight:800;color:#111;text-align:center;">Good morning, ${firstName}.</h2>
       <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Ready to download more TikTok videos today?</p>
 
@@ -550,7 +550,7 @@ export async function sendEveningReminderEmail(
 
   const body = hasFreeDl
     ? `
-      ${userAvatar(name)}
+      ${appLogoMark()}
       <h2 style="margin:0 0 6px;font-size:21px;font-weight:800;color:#111;text-align:center;">Good evening, ${firstName}.</h2>
       <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Before you wind down — save a video you loved today.</p>
 
@@ -572,7 +572,7 @@ export async function sendEveningReminderEmail(
       </p>
     `
     : `
-      ${userAvatar(name)}
+      ${appLogoMark()}
       <h2 style="margin:0 0 6px;font-size:21px;font-weight:800;color:#111;text-align:center;">Good evening, ${firstName}.</h2>
       <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Saw great TikToks today? Save them all — upgrade to Pro.</p>
 
