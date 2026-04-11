@@ -5,6 +5,7 @@ import { eq, and, gt, count, desc } from "drizzle-orm";
 import { signToken } from "../lib/auth";
 import { requireAuth } from "../middlewares/requireAuth";
 import { RegisterBody, LoginBody } from "@workspace/api-zod";
+import { sendWelcomeEmail } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -41,6 +42,9 @@ router.post("/auth/register", async (req, res): Promise<void> => {
     .returning();
 
   const token = signToken({ userId: user.id, email: user.email });
+
+  // Fire-and-forget: send welcome email without blocking the response
+  sendWelcomeEmail(user.name, user.email).catch(() => {});
 
   res.status(201).json({
     user: {
