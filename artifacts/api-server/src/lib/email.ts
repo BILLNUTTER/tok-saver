@@ -139,48 +139,17 @@ function unsubscribeFooter(userId: number): string {
   return `<br><a href="${url}" style="color:#bbb;text-decoration:underline;font-size:11px;">Unsubscribe from reminder emails</a>`;
 }
 
-// ─── User Avatar ──────────────────────────────────────────────────────────────
-// Generates a colored initial-letter circle (dp) for the top of every email.
+// ─── App Logo Mark ────────────────────────────────────────────────────────────
+// Renders the TokSaver brand logo above the email body — no image required.
 
-const AVATAR_COLORS = [
-  "#FF1A81", // A — brand pink
-  "#8B5CF6", // B — violet
-  "#3B82F6", // C — blue
-  "#10B981", // D — emerald
-  "#F59E0B", // E — amber
-  "#EF4444", // F — red
-  "#06B6D4", // G — cyan
-  "#EC4899", // H — pink
-  "#6366F1", // I — indigo
-  "#14B8A6", // J — teal
-  "#F97316", // K — orange
-  "#84CC16", // L — lime
-  "#A855F7", // M — purple
-  "#0EA5E9", // N — sky
-  "#FF1A81", // O — brand pink
-  "#22C55E", // P — green
-  "#EAB308", // Q — yellow
-  "#64748B", // R — slate
-  "#FF6B35", // S — orange-red
-  "#7C3AED", // T — dark violet
-  "#0891B2", // U — dark cyan
-  "#BE185D", // V — rose
-  "#059669", // W — dark emerald
-  "#7C2D12", // X — dark orange
-  "#4338CA", // Y — dark indigo
-  "#047857", // Z — dark teal
-];
-
-function userAvatar(name: string): string {
-  const initial = (name.trim()[0] ?? "U").toUpperCase();
-  const colorIndex = initial.charCodeAt(0) - 65;
-  const color = AVATAR_COLORS[Math.max(0, colorIndex % AVATAR_COLORS.length)] ?? "#FF1A81";
+function userAvatar(_name: string): string {
   return `
-    <div style="text-align:center;margin-bottom:24px;">
-      <div style="display:inline-block;width:64px;height:64px;border-radius:50%;
-                  background:${color};line-height:64px;text-align:center;">
-        <span style="font-size:26px;font-weight:800;color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;">
-          ${initial}
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="display:inline-block;background:#111111;border-radius:14px;padding:14px 24px;
+                  box-shadow:0 2px 8px rgba(0,0,0,0.18);">
+        <span style="font-size:24px;font-weight:900;letter-spacing:-0.5px;
+                     font-family:'Helvetica Neue',Arial,sans-serif;line-height:1;">
+          <span style="color:#FF1A81;">Tok</span><span style="color:#ffffff;">Saver</span>
         </span>
       </div>
     </div>`;
