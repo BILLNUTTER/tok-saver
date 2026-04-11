@@ -3,7 +3,7 @@ import { logger } from "./logger";
 
 const SENDER = "nutterxtech@gmail.com";
 const APP_NAME = "TokSaver";
-const APP_URL = process.env.APP_URL || "https://toksaver.replit.app";
+const APP_URL = process.env.APP_URL || "https://tok-saver.vercel.app";
 
 function getTransporter() {
   const pass = process.env.GMAIL_APP_PASSWORD;
@@ -170,6 +170,57 @@ export async function sendWelcomeEmail(name: string, email: string): Promise<voi
     logger.info({ email }, "Welcome email sent");
   } catch (err) {
     logger.error({ err, email }, "Failed to send welcome email");
+  }
+}
+
+// ─── Password Reset OTP ───────────────────────────────────────────────────────
+
+export async function sendResetCodeEmail(
+  name: string,
+  email: string,
+  code: string
+): Promise<void> {
+  const transporter = getTransporter();
+  if (!transporter) return;
+
+  const firstName = name.split(" ")[0];
+
+  const body = `
+    <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;">Password reset request</h2>
+    <p style="margin:0 0 20px;font-size:14px;color:#888;">Hi ${firstName}, we received a request to reset your TokSaver password.</p>
+
+    ${divider()}
+
+    <p style="margin:0 0 16px;color:#333;">
+      Enter the code below to verify it's you. It expires in <strong>15 minutes</strong>.
+    </p>
+
+    <div style="text-align:center;margin:28px 0;">
+      <div style="display:inline-block;background:#f4f4f5;border:2px solid #e8e8e8;border-radius:12px;padding:20px 40px;">
+        <span style="font-size:36px;font-weight:900;letter-spacing:0.35em;color:#111;font-family:'Courier New',monospace;">${code}</span>
+      </div>
+    </div>
+
+    ${divider()}
+
+    <p style="margin:0 0 8px;font-size:14px;color:#555;">
+      Once verified, you'll be able to set a new password on the site.
+    </p>
+    <p style="margin:0;font-size:13px;color:#aaa;">
+      If you did not request this, you can safely ignore this email — your password will not change.
+    </p>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: `"${APP_NAME}" <${SENDER}>`,
+      to: email,
+      subject: `Your TokSaver password reset code: ${code}`,
+      html: layout(body),
+    });
+    logger.info({ email }, "Password reset code email sent");
+  } catch (err) {
+    logger.error({ err, email }, "Failed to send reset code email");
   }
 }
 

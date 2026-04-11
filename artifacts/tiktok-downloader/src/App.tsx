@@ -11,6 +11,7 @@ import Login from "@/pages/login";
 import Register from "@/pages/register";
 import Subscribe from "@/pages/subscribe";
 import Settings from "@/pages/settings";
+import ForgotPassword from "@/pages/forgot-password";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ function Router() {
         <Route path="/register" component={Register} />
         <Route path="/subscribe" component={Subscribe} />
         <Route path="/settings" component={Settings} />
+        <Route path="/forgot-password" component={ForgotPassword} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

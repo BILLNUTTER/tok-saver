@@ -10,9 +10,10 @@ export const usersTable = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   suspended: boolean("suspended").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  // All JWT tokens with iat < tokensRevokedBefore are considered revoked.
-  // Set to NOW() on logout to invalidate existing sessions.
   tokensRevokedBefore: timestamp("tokens_revoked_before", { withTimezone: true }),
+  // Password reset OTP
+  resetCode: text("reset_code"),
+  resetCodeExpiresAt: timestamp("reset_code_expires_at", { withTimezone: true }),
 });
 
 export const insertUserSchema = createInsertSchema(usersTable).omit({

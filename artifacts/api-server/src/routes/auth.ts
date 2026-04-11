@@ -5,7 +5,7 @@ import { eq, and, gt, count, desc } from "drizzle-orm";
 import { signToken } from "../lib/auth";
 import { requireAuth } from "../middlewares/requireAuth";
 import { RegisterBody, LoginBody } from "@workspace/api-zod";
-import { sendWelcomeEmail } from "../lib/email";
+import { sendWelcomeEmail, sendResetCodeEmail } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -224,6 +224,105 @@ router.post("/user/change-password", requireAuth, async (req, res): Promise<void
 
   req.log.info({ userId: req.userId }, "User changed password");
   res.json({ message: "Password changed successfully" });
+});
+
+// ─── Password Reset ───────────────────────────────────────────────────────────
+
+router.post("/auth/forgot-password", async (req, res): Promise<void> => {
+  const { email } = req.body as { email?: string };
+  if (!email || typeof email !== "string") {
+    res.status(400).json({ error: "Email is required" });
+    return;
+  }
+
+  const [user] = await db
+    .select({ id: usersTable.id, name: usersTable.name })
+    .from(usersTable)
+    .where(eq(usersTable.email, email.toLowerCase().trim()));
+
+  if (!user) {
+    // Return success regardless so we don't leak whether an email is registered
+    res.json({ message: "If that email is registered, a code has been sent." });
+    return;
+  }
+
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+  await db
+    .update(usersTable)
+    .set({ resetCode: code, resetCodeExpiresAt: expiresAt })
+    .where(eq(usersTable.id, user.id));
+
+  sendResetCodeEmail(user.name, email, code).catch(() => {});
+
+  res.json({ message: "If that email is registered, a code has been sent." });
+});
+
+router.post("/auth/verify-reset-code", async (req, res): Promise<void> => {
+  const { email, code } = req.body as { email?: string; code?: string };
+  if (!email || !code) {
+    res.status(400).json({ error: "Email and code are required" });
+    return;
+  }
+
+  const [user] = await db
+    .select({ id: usersTable.id, resetCode: usersTable.resetCode, resetCodeExpiresAt: usersTable.resetCodeExpiresAt })
+    .from(usersTable)
+    .where(eq(usersTable.email, email.toLowerCase().trim()));
+
+  if (!user || user.resetCode !== code || !user.resetCodeExpiresAt) {
+    res.status(400).json({ error: "The code is incorrect or has expired." });
+    return;
+  }
+
+  if (new Date() > user.resetCodeExpiresAt) {
+    res.status(400).json({ error: "The code has expired. Please request a new one." });
+    return;
+  }
+
+  res.json({ message: "Code verified" });
+});
+
+router.post("/auth/reset-password", async (req, res): Promise<void> => {
+  const { email, code, newPassword } = req.body as {
+    email?: string;
+    code?: string;
+    newPassword?: string;
+  };
+
+  if (!email || !code || !newPassword) {
+    res.status(400).json({ error: "Email, code, and new password are required" });
+    return;
+  }
+  if (newPassword.length < 8) {
+    res.status(400).json({ error: "Password must be at least 8 characters" });
+    return;
+  }
+
+  const [user] = await db
+    .select({ id: usersTable.id, resetCode: usersTable.resetCode, resetCodeExpiresAt: usersTable.resetCodeExpiresAt })
+    .from(usersTable)
+    .where(eq(usersTable.email, email.toLowerCase().trim()));
+
+  if (!user || user.resetCode !== code || !user.resetCodeExpiresAt) {
+    res.status(400).json({ error: "The code is incorrect or has expired." });
+    return;
+  }
+
+  if (new Date() > user.resetCodeExpiresAt) {
+    res.status(400).json({ error: "The code has expired. Please request a new one." });
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await db
+    .update(usersTable)
+    .set({ passwordHash, resetCode: null, resetCodeExpiresAt: null, tokensRevokedBefore: new Date() })
+    .where(eq(usersTable.id, user.id));
+
+  req.log.info({ userId: user.id }, "Password reset via OTP");
+  res.json({ message: "Password reset successfully" });
 });
 
 export default router;

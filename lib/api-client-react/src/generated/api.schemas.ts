@@ -208,3 +208,18 @@ export interface AdminStats {
   revenueThisMonth: number;
   newUsersThisMonth: number;
 }
+
+export interface ForgotPasswordBody {
+  email: string;
+}
+
+export interface VerifyResetCodeBody {
+  email: string;
+  code: string;
+}
+
+export interface ResetPasswordBody {
+  email: string;
+  code: string;
+  newPassword: string;
+}
