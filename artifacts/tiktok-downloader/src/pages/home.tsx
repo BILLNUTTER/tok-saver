@@ -441,7 +441,8 @@ function DownloadInterface() {
         onSuccess: (data) => {
           setDownloadResult({ url: data.downloadUrl, musicUrl: data.musicUrl, title: data.title, thumbnail: data.thumbnailUrl, sourceUrl: values.url });
           toast({ title: "Video ready!", description: "Tap 'Save to Device' to download." });
-          form.reset();
+          form.reset({ url: "" });
+          form.clearErrors();
           refetchHistory();
           refetchSubStatus();
         },
