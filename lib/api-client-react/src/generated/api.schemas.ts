@@ -58,6 +58,8 @@ export interface DownloadBody {
 export interface DownloadResponse {
   downloadUrl: string;
   /** @nullable */
+  musicUrl?: string | null;
+  /** @nullable */
   title?: string | null;
   /** @nullable */
   thumbnailUrl?: string | null;

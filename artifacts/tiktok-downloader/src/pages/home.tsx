@@ -30,7 +30,7 @@ import {
   Loader2, Download, History, Settings, Users, BarChart3, Lock,
   CheckCircle2, AlertCircle, ShieldOff, ShieldCheck, Trash2, ArrowUpCircle,
   HardDriveDownload, ExternalLink, CreditCard, Clock, Zap, Star,
-  Mail, Phone, MessageSquare, TrendingUp, Shield, Globe
+  Mail, Phone, MessageSquare, TrendingUp, Shield, Globe, Music
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -365,7 +365,7 @@ function Landing() {
 function DownloadInterface() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [downloadResult, setDownloadResult] = useState<{ url: string; title?: string | null; thumbnail?: string | null; sourceUrl?: string } | null>(null);
+  const [downloadResult, setDownloadResult] = useState<{ url: string; musicUrl?: string | null; title?: string | null; thumbnail?: string | null; sourceUrl?: string } | null>(null);
   const [saveProgress, setSaveProgress] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -373,16 +373,16 @@ function DownloadInterface() {
   const { data: history, refetch: refetchHistory } = useGetDownloadHistory();
   const downloadMutation = useDownloadVideo();
 
-  function saveVideoToDevice(videoUrl: string, title?: string | null, sourceUrl?: string) {
+  function saveVideoToDevice(videoUrl: string, title?: string | null, sourceUrl?: string, ext: "mp4" | "mp3" = "mp4") {
     const token = localStorage.getItem("auth_token");
     const apiBase = (import.meta.env.VITE_API_URL as string | undefined) || "";
-    const defaultName = "tiktok-video";
+    const defaultName = ext === "mp3" ? "tiktok-audio" : "tiktok-video";
     const safeFilename = (title || defaultName)
       .replace(/[^a-zA-Z0-9_\-\s]/g, "")
       .trim()
       .replace(/\s+/g, "-")
       .slice(0, 60) || defaultName;
-    const proxyUrl = `${apiBase}/api/download-proxy?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(safeFilename + ".mp4")}`;
+    const proxyUrl = `${apiBase}/api/download-proxy?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(safeFilename + "." + ext)}`;
 
     setIsSaving(true);
     setSaveProgress(0);
@@ -408,14 +408,14 @@ function DownloadInterface() {
         const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = blobUrl;
-        a.download = safeFilename + ".mp4";
+        a.download = safeFilename + "." + ext;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-        toast({ title: "Saved!", description: "Video saved to your device." });
+        toast({ title: "Saved!", description: ext === "mp3" ? "Audio saved to your device." : "Video saved to your device." });
       } else {
-        toast({ variant: "destructive", title: "Save failed", description: "Could not download the video. Try again." });
+        toast({ variant: "destructive", title: "Save failed", description: "Could not download the file. Try again." });
       }
     };
 
@@ -439,7 +439,7 @@ function DownloadInterface() {
       { data: { url: values.url } },
       {
         onSuccess: (data) => {
-          setDownloadResult({ url: data.downloadUrl, title: data.title, thumbnail: data.thumbnailUrl, sourceUrl: values.url });
+          setDownloadResult({ url: data.downloadUrl, musicUrl: data.musicUrl, title: data.title, thumbnail: data.thumbnailUrl, sourceUrl: values.url });
           toast({ title: "Video ready!", description: "Tap 'Save to Device' to download." });
           form.reset();
           refetchHistory();
@@ -563,13 +563,25 @@ function DownloadInterface() {
                     <Progress value={saveProgress ?? 0} className="h-2" />
                   </div>
                 ) : (
-                  <Button
-                    className="w-full sm:w-auto"
-                    onClick={() => saveVideoToDevice(downloadResult.url, downloadResult.title, downloadResult.sourceUrl)}
-                    data-testid="link-save-video"
-                  >
-                    <HardDriveDownload className="w-4 h-4 mr-2" /> Save to Device
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button
+                      className="w-full sm:w-auto"
+                      onClick={() => saveVideoToDevice(downloadResult.url, downloadResult.title, downloadResult.sourceUrl, "mp4")}
+                      data-testid="link-save-video"
+                    >
+                      <HardDriveDownload className="w-4 h-4 mr-2" /> Save Video
+                    </Button>
+                    {downloadResult.musicUrl && (
+                      <Button
+                        variant="outline"
+                        className="w-full sm:w-auto border-primary/30 text-primary hover:bg-primary/10"
+                        onClick={() => saveVideoToDevice(downloadResult.musicUrl!, downloadResult.title, downloadResult.sourceUrl, "mp3")}
+                        data-testid="link-save-audio"
+                      >
+                        <Music className="w-4 h-4 mr-2" /> Audio Only
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

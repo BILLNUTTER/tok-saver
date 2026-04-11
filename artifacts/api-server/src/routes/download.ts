@@ -65,6 +65,7 @@ router.post("/download", requireAuth, async (req, res): Promise<void> => {
 
     res.json({
       downloadUrl: videoInfo.downloadUrl,
+      musicUrl: videoInfo.musicUrl,
       title: videoInfo.title,
       thumbnailUrl: videoInfo.thumbnailUrl,
       remainingFreeDownloads,

@@ -6,6 +6,7 @@ import { signToken } from "../lib/auth";
 import { requireAuth } from "../middlewares/requireAuth";
 import { RegisterBody, LoginBody } from "@workspace/api-zod";
 import { sendWelcomeEmail, sendResetCodeEmail, verifyUnsubscribeToken } from "../lib/email";
+import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
@@ -44,7 +45,7 @@ router.post("/auth/register", async (req, res): Promise<void> => {
   const token = signToken({ userId: user.id, email: user.email });
 
   // Fire-and-forget: send welcome email without blocking the response
-  sendWelcomeEmail(user.name, user.email).catch(() => {});
+  sendWelcomeEmail(user.name, user.email).catch((e) => logger.error({ err: e }, "Failed to send welcome email"));
 
   res.status(201).json({
     user: {
@@ -334,7 +335,7 @@ router.post("/auth/forgot-password", async (req, res): Promise<void> => {
     .set({ resetCode: code, resetCodeExpiresAt: expiresAt })
     .where(eq(usersTable.id, user.id));
 
-  sendResetCodeEmail(user.name, email, code).catch(() => {});
+  sendResetCodeEmail(user.name, email, code).catch((e) => logger.error({ err: e }, "Failed to send reset code email"));
 
   res.json({ message: "Verification code sent to your email." });
 });

@@ -807,6 +807,8 @@ components:
       properties:
         downloadUrl:
           type: string
+        musicUrl:
+          type: ["string", "null"]
         title:
           type: ["string", "null"]
         thumbnailUrl:

@@ -2,6 +2,7 @@ import { logger } from "./logger";
 
 interface TikTokInfo {
   downloadUrl: string;
+  musicUrl: string | null;
   title: string | null;
   thumbnailUrl: string | null;
 }
@@ -29,6 +30,8 @@ export async function fetchTikTokVideo(url: string): Promise<TikTokInfo> {
     data?: {
       play?: string;
       hdplay?: string;
+      music?: string;
+      music_info?: { play?: string };
       title?: string;
       cover?: string;
     };
@@ -39,13 +42,16 @@ export async function fetchTikTokVideo(url: string): Promise<TikTokInfo> {
   }
 
   const videoData = data.data;
-  const downloadUrl = videoData.hdplay ?? videoData.play ?? "";
+  const downloadUrl = videoData.hdplay || videoData.play || "";
   if (!downloadUrl) {
     throw new Error("No download URL available");
   }
 
+  const musicUrl = videoData.music || videoData.music_info?.play || null;
+
   return {
     downloadUrl,
+    musicUrl: musicUrl || null,
     title: videoData.title ?? null,
     thumbnailUrl: videoData.cover ?? null,
   };

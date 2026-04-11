@@ -1,6 +1,7 @@
 import { useState, useCallback, createContext, useContext } from "react";
 import { setAuthTokenGetter, useGetMe, getGetMeQueryKey, logout as apiLogout } from "@workspace/api-client-react";
 import type { UserResponse } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Set the token getter synchronously at module load time so that the very
 // first useGetMe query (which runs before any useEffect) already has it.
@@ -20,6 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setTokenState] = useState<string | null>(() => {
     return localStorage.getItem("auth_token");
   });
+  const queryClient = useQueryClient();
 
   const { data: user, isLoading: isUserLoading } = useGetMe({
     query: {
@@ -38,7 +40,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     apiLogout().catch(() => {});
     localStorage.removeItem("auth_token");
     setTokenState(null);
-  }, []);
+    queryClient.removeQueries({ queryKey: getGetMeQueryKey() });
+    queryClient.clear();
+  }, [queryClient]);
 
   return (
     <AuthContext.Provider
