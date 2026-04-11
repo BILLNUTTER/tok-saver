@@ -139,6 +139,53 @@ function unsubscribeFooter(userId: number): string {
   return `<br><a href="${url}" style="color:#bbb;text-decoration:underline;font-size:11px;">Unsubscribe from reminder emails</a>`;
 }
 
+// ─── User Avatar ──────────────────────────────────────────────────────────────
+// Generates a colored initial-letter circle (dp) for the top of every email.
+
+const AVATAR_COLORS = [
+  "#FF1A81", // A — brand pink
+  "#8B5CF6", // B — violet
+  "#3B82F6", // C — blue
+  "#10B981", // D — emerald
+  "#F59E0B", // E — amber
+  "#EF4444", // F — red
+  "#06B6D4", // G — cyan
+  "#EC4899", // H — pink
+  "#6366F1", // I — indigo
+  "#14B8A6", // J — teal
+  "#F97316", // K — orange
+  "#84CC16", // L — lime
+  "#A855F7", // M — purple
+  "#0EA5E9", // N — sky
+  "#FF1A81", // O — brand pink
+  "#22C55E", // P — green
+  "#EAB308", // Q — yellow
+  "#64748B", // R — slate
+  "#FF6B35", // S — orange-red
+  "#7C3AED", // T — dark violet
+  "#0891B2", // U — dark cyan
+  "#BE185D", // V — rose
+  "#059669", // W — dark emerald
+  "#7C2D12", // X — dark orange
+  "#4338CA", // Y — dark indigo
+  "#047857", // Z — dark teal
+];
+
+function userAvatar(name: string): string {
+  const initial = (name.trim()[0] ?? "U").toUpperCase();
+  const colorIndex = initial.charCodeAt(0) - 65;
+  const color = AVATAR_COLORS[Math.max(0, colorIndex % AVATAR_COLORS.length)] ?? "#FF1A81";
+  return `
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="display:inline-block;width:64px;height:64px;border-radius:50%;
+                  background:${color};line-height:64px;text-align:center;">
+        <span style="font-size:26px;font-weight:800;color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;">
+          ${initial}
+        </span>
+      </div>
+    </div>`;
+}
+
 // ─── Welcome Email ────────────────────────────────────────────────────────────
 
 export async function sendWelcomeEmail(name: string, email: string): Promise<void> {
@@ -148,8 +195,9 @@ export async function sendWelcomeEmail(name: string, email: string): Promise<voi
   const firstName = name.split(" ")[0];
 
   const body = `
-    <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;">Welcome to TokSaver, ${firstName}.</h2>
-    <p style="margin:0 0 20px;font-size:14px;color:#888;">Your account is ready — let's get your first video.</p>
+    ${userAvatar(name)}
+    <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;text-align:center;">Welcome to TokSaver, ${firstName}.</h2>
+    <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Your account is ready — let's get your first video.</p>
 
     ${divider()}
 
@@ -222,8 +270,9 @@ export async function sendResetCodeEmail(
   const firstName = name.split(" ")[0];
 
   const body = `
-    <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;">Password reset request</h2>
-    <p style="margin:0 0 20px;font-size:14px;color:#888;">Hi ${firstName}, we received a request to reset your TokSaver password.</p>
+    ${userAvatar(name)}
+    <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;text-align:center;">Password reset request</h2>
+    <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Hi ${firstName}, we received a request to reset your TokSaver password.</p>
 
     ${divider()}
 
@@ -273,8 +322,9 @@ export async function sendVerificationCodeEmail(
   const firstName = name.split(" ")[0];
 
   const body = `
-    <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;">Verify your email</h2>
-    <p style="margin:0 0 20px;font-size:14px;color:#888;">Hi ${firstName}, thanks for signing up. Enter the code below to confirm your email address.</p>
+    ${userAvatar(name)}
+    <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;text-align:center;">Verify your email</h2>
+    <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Hi ${firstName}, thanks for signing up. Enter the code below to confirm your email address.</p>
 
     ${divider()}
 
@@ -330,8 +380,9 @@ export async function sendSubscriptionConfirmedEmail(
   });
 
   const body = `
-    <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;">You're now a Pro subscriber!</h2>
-    <p style="margin:0 0 20px;font-size:14px;color:#888;">Hi ${firstName}, your M-Pesa payment was received. Your subscription is active.</p>
+    ${userAvatar(name)}
+    <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;text-align:center;">You're now a Pro subscriber!</h2>
+    <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Hi ${firstName}, your M-Pesa payment was received. Your subscription is active.</p>
 
     ${divider()}
 
@@ -397,8 +448,9 @@ export async function sendSubscriptionExpiredEmail(
   const footer = unsubscribeFooter(userId);
 
   const body = `
-    <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;">Your subscription has ended</h2>
-    <p style="margin:0 0 20px;font-size:14px;color:#888;">Hi ${firstName}, your ${planLabel} plan has expired.</p>
+    ${userAvatar(name)}
+    <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#111;text-align:center;">Your subscription has ended</h2>
+    <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Hi ${firstName}, your ${planLabel} plan has expired.</p>
 
     ${divider()}
 
@@ -449,8 +501,9 @@ export async function sendMorningReminderEmail(
 
   const body = hasFreeDl
     ? `
-      <h2 style="margin:0 0 6px;font-size:21px;font-weight:800;color:#111;">Good morning, ${firstName}.</h2>
-      <p style="margin:0 0 20px;font-size:14px;color:#888;">Start your day with a quick TikTok download.</p>
+      ${userAvatar(name)}
+      <h2 style="margin:0 0 6px;font-size:21px;font-weight:800;color:#111;text-align:center;">Good morning, ${firstName}.</h2>
+      <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Start your day with a quick TikTok download.</p>
 
       ${divider()}
 
@@ -470,8 +523,9 @@ export async function sendMorningReminderEmail(
       </p>
     `
     : `
-      <h2 style="margin:0 0 6px;font-size:21px;font-weight:800;color:#111;">Good morning, ${firstName}.</h2>
-      <p style="margin:0 0 20px;font-size:14px;color:#888;">Ready to download more TikTok videos today?</p>
+      ${userAvatar(name)}
+      <h2 style="margin:0 0 6px;font-size:21px;font-weight:800;color:#111;text-align:center;">Good morning, ${firstName}.</h2>
+      <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Ready to download more TikTok videos today?</p>
 
       ${divider()}
 
@@ -527,8 +581,9 @@ export async function sendEveningReminderEmail(
 
   const body = hasFreeDl
     ? `
-      <h2 style="margin:0 0 6px;font-size:21px;font-weight:800;color:#111;">Good evening, ${firstName}.</h2>
-      <p style="margin:0 0 20px;font-size:14px;color:#888;">Before you wind down — save a video you loved today.</p>
+      ${userAvatar(name)}
+      <h2 style="margin:0 0 6px;font-size:21px;font-weight:800;color:#111;text-align:center;">Good evening, ${firstName}.</h2>
+      <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Before you wind down — save a video you loved today.</p>
 
       ${divider()}
 
@@ -548,8 +603,9 @@ export async function sendEveningReminderEmail(
       </p>
     `
     : `
-      <h2 style="margin:0 0 6px;font-size:21px;font-weight:800;color:#111;">Good evening, ${firstName}.</h2>
-      <p style="margin:0 0 20px;font-size:14px;color:#888;">Saw great TikToks today? Save them all — upgrade to Pro.</p>
+      ${userAvatar(name)}
+      <h2 style="margin:0 0 6px;font-size:21px;font-weight:800;color:#111;text-align:center;">Good evening, ${firstName}.</h2>
+      <p style="margin:0 0 20px;font-size:14px;color:#888;text-align:center;">Saw great TikToks today? Save them all — upgrade to Pro.</p>
 
       ${divider()}
 
