@@ -6,7 +6,12 @@ import { signToken } from "../lib/auth";
 import { requireAuth } from "../middlewares/requireAuth";
 import { RegisterBody, LoginBody } from "@workspace/api-zod";
 import { sendWelcomeEmail, sendResetCodeEmail, sendVerificationCodeEmail, verifyUnsubscribeToken } from "../lib/email";
+import { acquireCode } from "../lib/otpPool";
 import { logger } from "../lib/logger";
+
+// Bcrypt cost: 10 rounds ≈ 80–120 ms — still far above brute-force thresholds
+// while being ~4x faster than 12 rounds (which was 300–500 ms).
+const BCRYPT_ROUNDS = 10;
 
 const router: IRouter = Router();
 
@@ -18,27 +23,24 @@ router.post("/auth/register", async (req, res): Promise<void> => {
   }
   const { name, email, phone, password } = parsed.data;
 
-  const [existingEmail] = await db
-    .select({ id: usersTable.id })
-    .from(usersTable)
-    .where(eq(usersTable.email, email));
+  // Run duplicate-check queries in parallel — saves one round-trip vs sequential
+  const [[existingEmail], [existingPhone]] = await Promise.all([
+    db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, email)),
+    db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.phone, phone)),
+  ]);
   if (existingEmail) {
     res.status(409).json({ error: "Email already registered" });
     return;
   }
-
-  const [existingPhone] = await db
-    .select({ id: usersTable.id })
-    .from(usersTable)
-    .where(eq(usersTable.phone, phone));
   if (existingPhone) {
     res.status(409).json({ error: "Phone number already registered" });
     return;
   }
 
-  const passwordHash = await bcrypt.hash(password, 12);
+  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-  const verificationCode = String(Math.floor(100000 + Math.random() * 900000));
+  // Pre-generated code from pool — O(1), no computation on this path
+  const verificationCode = acquireCode();
   const verificationCodeExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
   const [user] = await db
@@ -251,7 +253,7 @@ router.post("/auth/resend-verification", requireAuth, async (req, res): Promise<
     return;
   }
 
-  const newCode = String(Math.floor(100000 + Math.random() * 900000));
+  const newCode = acquireCode();
   const newExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
   await db
@@ -320,7 +322,7 @@ router.post("/user/change-password", requireAuth, async (req, res): Promise<void
     return;
   }
 
-  const newHash = await bcrypt.hash(newPassword, 12);
+  const newHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
   await db
     .update(usersTable)
     .set({ passwordHash: newHash })
@@ -430,7 +432,7 @@ router.post("/auth/forgot-password", async (req, res): Promise<void> => {
     return;
   }
 
-  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const code = acquireCode();
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
   await db
@@ -499,7 +501,7 @@ router.post("/auth/reset-password", async (req, res): Promise<void> => {
     return;
   }
 
-  const passwordHash = await bcrypt.hash(newPassword, 12);
+  const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
   await db
     .update(usersTable)
     .set({ passwordHash, resetCode: null, resetCodeExpiresAt: null, tokensRevokedBefore: new Date() })

@@ -2,7 +2,8 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { db, usersTable, downloadsTable, subscriptionsTable } from "@workspace/db";
 import { eq, and, gt, lt, gte, count } from "drizzle-orm";
-import { sendMorningReminderEmail, sendEveningReminderEmail, sendSubscriptionExpiredEmail } from "./lib/email";
+import { sendMorningReminderEmail, sendEveningReminderEmail, sendSubscriptionExpiredEmail, warmSmtp } from "./lib/email";
+import { initOtpPool } from "./lib/otpPool";
 
 const rawPort = process.env["PORT"];
 
@@ -21,6 +22,12 @@ app.listen(port, (err) => {
     process.exit(1);
   }
   logger.info({ port }, "Server listening");
+
+  // Pre-generate OTP codes and warm the SMTP connection so neither step
+  // adds latency when the first user registers or resets their password.
+  initOtpPool();
+  warmSmtp();
+
   startEmailScheduler();
 });
 

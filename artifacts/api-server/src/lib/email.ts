@@ -34,6 +34,20 @@ function getTransporter() {
   return _transporter;
 }
 
+/**
+ * Warm the SMTP connection pool on server startup.
+ * Calling verify() establishes a live TCP+TLS connection so the first
+ * real email is sent on an already-open socket instead of paying the
+ * handshake cost at registration time.
+ */
+export function warmSmtp(): void {
+  const t = getTransporter();
+  if (!t) return;
+  t.verify()
+    .then(() => logger.info("SMTP connection warmed"))
+    .catch((e) => logger.warn({ err: e }, "SMTP warm-up failed (non-fatal)"));
+}
+
 // ─── Unsubscribe helpers ──────────────────────────────────────────────────────
 
 function unsubscribeToken(userId: number): string {
