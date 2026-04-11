@@ -30,10 +30,12 @@ export async function fetchTikTokVideo(url: string): Promise<TikTokInfo> {
     data?: {
       play?: string;
       hdplay?: string;
+      wmplay?: string;
       music?: string;
       music_info?: { play?: string };
       title?: string;
       cover?: string;
+      images?: string[];
     };
   };
 
@@ -42,12 +44,32 @@ export async function fetchTikTokVideo(url: string): Promise<TikTokInfo> {
   }
 
   const videoData = data.data;
-  const downloadUrl = videoData.hdplay || videoData.play || "";
-  if (!downloadUrl) {
-    throw new Error("No download URL available");
+
+  logger.info({
+    hdplay: videoData.hdplay ? "present" : "missing",
+    play: videoData.play ? "present" : "missing",
+    music: videoData.music ? "present" : "missing",
+    isSlideshow: !!videoData.images?.length,
+  }, "TikTok video data fields");
+
+  // Photo slideshows have images[] but no playable video
+  if (videoData.images?.length && !videoData.hdplay && !videoData.play) {
+    throw new Error("This TikTok is a photo slideshow — only regular videos can be downloaded.");
   }
 
+  const downloadUrl = videoData.hdplay || videoData.play || "";
+  if (!downloadUrl) {
+    throw new Error("No download URL available for this video.");
+  }
+
+  // If the video URL looks like an audio URL, prefer hdplay
   const musicUrl = videoData.music || videoData.music_info?.play || null;
+
+  // Guard: if video URL is the same as music URL, the API gave us audio instead of video
+  if (downloadUrl === musicUrl) {
+    logger.warn({ downloadUrl }, "downloadUrl same as musicUrl — possible slideshow or API issue");
+    throw new Error("Could not retrieve a video file for this TikTok. It may be a slideshow or audio-only post.");
+  }
 
   return {
     downloadUrl,

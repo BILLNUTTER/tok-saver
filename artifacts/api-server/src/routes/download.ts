@@ -144,7 +144,13 @@ router.get("/download-proxy", requireAuth, async (req, res): Promise<void> => {
       return;
     }
 
-    const contentType = upstream.headers.get("content-type") || "video/mp4";
+    // Derive content-type from the requested filename extension so browsers
+    // treat the file correctly regardless of what the upstream CDN header says.
+    const fileExt = filename.split(".").pop()?.toLowerCase();
+    const contentType =
+      fileExt === "mp3" ? "audio/mpeg" :
+      fileExt === "mp4" ? "video/mp4" :
+      upstream.headers.get("content-type") || "video/mp4";
     const contentLength = upstream.headers.get("content-length");
 
     res.setHeader("Content-Type", contentType);
