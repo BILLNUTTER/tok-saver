@@ -175,9 +175,14 @@ function StepCode({
     <Card className="w-full max-w-md shadow-2xl border-primary/10">
       <CardHeader className="space-y-1 text-center">
         <CardTitle className="text-3xl font-bold tracking-tight">Enter your code</CardTitle>
-        <CardDescription>
-          We sent a 6-digit code to <span className="font-medium text-foreground">{email}</span>.
-          Check your inbox.
+        <CardDescription className="space-y-1">
+          <span>
+            We sent a 6-digit code to{" "}
+            <span className="font-medium text-foreground">{email}</span>.
+          </span>
+          <span className="block text-xs mt-1">
+            Don't see it? <strong>Check your spam or junk folder</strong> — it may have landed there.
+          </span>
         </CardDescription>
       </CardHeader>
       <CardContent>

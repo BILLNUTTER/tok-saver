@@ -52,7 +52,7 @@ async function runReminderBatch(slot: "morning" | "evening"): Promise<void> {
   const users = await db
     .select({ id: usersTable.id, name: usersTable.name, email: usersTable.email })
     .from(usersTable)
-    .where(eq(usersTable.suspended, false));
+    .where(and(eq(usersTable.suspended, false), eq(usersTable.emailUnsubscribed, false)));
 
   logger.info({ slot, count: users.length }, "Sending reminder emails");
 
@@ -79,9 +79,9 @@ async function runReminderBatch(slot: "morning" | "evening"): Promise<void> {
       const hasFreeDl = Number(dlResult?.count ?? 0) < freeLimit;
 
       if (slot === "morning") {
-        await sendMorningReminderEmail(user.name, user.email, hasFreeDl);
+        await sendMorningReminderEmail(user.id, user.name, user.email, hasFreeDl);
       } else {
-        await sendEveningReminderEmail(user.name, user.email, hasFreeDl);
+        await sendEveningReminderEmail(user.id, user.name, user.email, hasFreeDl);
       }
     } catch (err) {
       logger.error({ err, userId: user.id, slot }, "Error sending reminder");

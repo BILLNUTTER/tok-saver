@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import crypto from "crypto";
 import { logger } from "./logger";
 
 const SENDER = "nutterxtech@gmail.com";
@@ -17,9 +18,29 @@ function getTransporter() {
   });
 }
 
+// ─── Unsubscribe helpers ──────────────────────────────────────────────────────
+
+function unsubscribeToken(userId: number): string {
+  const secret = process.env.JWT_SECRET || "fallback-secret";
+  return crypto.createHmac("sha256", secret).update(String(userId)).digest("hex");
+}
+
+export function buildUnsubscribeUrl(userId: number): string {
+  return `${APP_URL}/api/auth/unsubscribe?uid=${userId}&token=${unsubscribeToken(userId)}`;
+}
+
+export function verifyUnsubscribeToken(userId: number, token: string): boolean {
+  const expected = unsubscribeToken(userId);
+  try {
+    return crypto.timingSafeEqual(Buffer.from(token, "hex"), Buffer.from(expected, "hex"));
+  } catch {
+    return false;
+  }
+}
+
 // ─── Base Layout ─────────────────────────────────────────────────────────────
 
-function layout(bodyHtml: string): string {
+function layout(bodyHtml: string, footerExtra = ""): string {
   const year = new Date().getFullYear();
   return `<!DOCTYPE html>
 <html lang="en">
@@ -51,9 +72,10 @@ function layout(bodyHtml: string): string {
 
         <!-- Footer -->
         <tr>
-          <td style="padding:20px 40px 28px;border-top:1px solid #e8e8e8;text-align:center;color:#999;font-size:12px;line-height:1.6;">
+          <td style="padding:20px 40px 28px;border-top:1px solid #e8e8e8;text-align:center;color:#999;font-size:12px;line-height:1.8;">
             &copy; ${year} ${APP_NAME} &mdash; Watermark-free TikTok downloads<br>
             Questions? <a href="mailto:${SENDER}" style="color:#FF1A81;text-decoration:none;">${SENDER}</a>
+            ${footerExtra}
           </td>
         </tr>
 
@@ -105,6 +127,18 @@ function divider(): string {
   return `<hr style="border:none;border-top:1px solid #e8e8e8;margin:24px 0;">`;
 }
 
+function spamNote(): string {
+  return `
+    <p style="margin:16px 0 0;font-size:12px;color:#bbb;text-align:center;">
+      Can't find this email? Check your <strong>spam or junk folder</strong>.
+    </p>`;
+}
+
+function unsubscribeFooter(userId: number): string {
+  const url = buildUnsubscribeUrl(userId);
+  return `<br><a href="${url}" style="color:#bbb;text-decoration:underline;font-size:11px;">Unsubscribe from reminder emails</a>`;
+}
+
 // ─── Welcome Email ────────────────────────────────────────────────────────────
 
 export async function sendWelcomeEmail(name: string, email: string): Promise<void> {
@@ -149,6 +183,8 @@ export async function sendWelcomeEmail(name: string, email: string): Promise<voi
     </table>
 
     ${ctaButton("Use My Free Download →", APP_URL)}
+
+    ${spamNote()}
 
     ${divider()}
 
@@ -201,10 +237,12 @@ export async function sendResetCodeEmail(
       </div>
     </div>
 
+    ${spamNote()}
+
     ${divider()}
 
     <p style="margin:0 0 8px;font-size:14px;color:#555;">
-      Once verified, you'll be able to set a new password on the site.
+      Once verified, you'll be able to set a new password on <a href="${APP_URL}" style="color:#FF1A81;text-decoration:none;">${APP_URL}</a>.
     </p>
     <p style="margin:0;font-size:13px;color:#aaa;">
       If you did not request this, you can safely ignore this email — your password will not change.
@@ -224,9 +262,10 @@ export async function sendResetCodeEmail(
   }
 }
 
-// ─── Morning Reminder (8–9 AM EAT) ───────────────────────────────────────────
+// ─── Morning Reminder (8 AM EAT) ─────────────────────────────────────────────
 
 export async function sendMorningReminderEmail(
+  userId: number,
   name: string,
   email: string,
   hasFreeDl: boolean
@@ -235,6 +274,8 @@ export async function sendMorningReminderEmail(
   if (!transporter) return;
 
   const firstName = name.split(" ")[0];
+  const unsubUrl = buildUnsubscribeUrl(userId);
+  const footer = unsubscribeFooter(userId);
 
   const body = hasFreeDl
     ? `
@@ -287,7 +328,11 @@ export async function sendMorningReminderEmail(
       subject: hasFreeDl
         ? `Good morning, ${firstName} — your free TikTok download is waiting`
         : `Good morning, ${firstName} — download unlimited TikToks today`,
-      html: layout(body),
+      headers: {
+        "List-Unsubscribe": `<${unsubUrl}>, <mailto:${SENDER}?subject=unsubscribe>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+      html: layout(body, footer),
     });
     logger.info({ email, slot: "morning" }, "Reminder email sent");
   } catch (err) {
@@ -295,9 +340,10 @@ export async function sendMorningReminderEmail(
   }
 }
 
-// ─── Evening Reminder (8–9 PM EAT) ───────────────────────────────────────────
+// ─── Evening Reminder (8 PM EAT) ─────────────────────────────────────────────
 
 export async function sendEveningReminderEmail(
+  userId: number,
   name: string,
   email: string,
   hasFreeDl: boolean
@@ -306,6 +352,8 @@ export async function sendEveningReminderEmail(
   if (!transporter) return;
 
   const firstName = name.split(" ")[0];
+  const unsubUrl = buildUnsubscribeUrl(userId);
+  const footer = unsubscribeFooter(userId);
 
   const body = hasFreeDl
     ? `
@@ -358,7 +406,11 @@ export async function sendEveningReminderEmail(
       subject: hasFreeDl
         ? `Good evening, ${firstName} — save a TikTok before bed`
         : `Good evening, ${firstName} — go Pro and never miss a video`,
-      html: layout(body),
+      headers: {
+        "List-Unsubscribe": `<${unsubUrl}>, <mailto:${SENDER}?subject=unsubscribe>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+      html: layout(body, footer),
     });
     logger.info({ email, slot: "evening" }, "Reminder email sent");
   } catch (err) {

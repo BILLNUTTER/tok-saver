@@ -5,7 +5,7 @@ import { eq, and, gt, count, desc } from "drizzle-orm";
 import { signToken } from "../lib/auth";
 import { requireAuth } from "../middlewares/requireAuth";
 import { RegisterBody, LoginBody } from "@workspace/api-zod";
-import { sendWelcomeEmail, sendResetCodeEmail } from "../lib/email";
+import { sendWelcomeEmail, sendResetCodeEmail, verifyUnsubscribeToken } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -225,6 +225,76 @@ router.post("/user/change-password", requireAuth, async (req, res): Promise<void
   req.log.info({ userId: req.userId }, "User changed password");
   res.json({ message: "Password changed successfully" });
 });
+
+// ─── Email Unsubscribe ────────────────────────────────────────────────────────
+
+router.get("/auth/unsubscribe", async (req, res): Promise<void> => {
+  const uid = Number(req.query["uid"]);
+  const token = String(req.query["token"] ?? "");
+
+  if (!uid || isNaN(uid) || !token) {
+    res.status(400).send(unsubscribePage("Invalid Link", "This unsubscribe link is invalid or missing required information.", false));
+    return;
+  }
+
+  if (!verifyUnsubscribeToken(uid, token)) {
+    res.status(403).send(unsubscribePage("Invalid Link", "This unsubscribe link is not valid.", false));
+    return;
+  }
+
+  const [user] = await db
+    .select({ id: usersTable.id, emailUnsubscribed: usersTable.emailUnsubscribed })
+    .from(usersTable)
+    .where(eq(usersTable.id, uid));
+
+  if (!user) {
+    res.status(404).send(unsubscribePage("Not Found", "We couldn't find your account.", false));
+    return;
+  }
+
+  if (user.emailUnsubscribed) {
+    res.send(unsubscribePage("Already Unsubscribed", "You're already unsubscribed from reminder emails.", true));
+    return;
+  }
+
+  await db
+    .update(usersTable)
+    .set({ emailUnsubscribed: true })
+    .where(eq(usersTable.id, uid));
+
+  res.send(unsubscribePage("Unsubscribed", "You've been successfully removed from reminder emails. You'll still receive important account emails such as password resets.", true));
+});
+
+function unsubscribePage(title: string, message: string, success: boolean): string {
+  const color = success ? "#22c55e" : "#ef4444";
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${title} — TokSaver</title>
+  <style>
+    body { margin:0; padding:0; background:#0a0a0a; font-family:'Helvetica Neue',Arial,sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .card { background:#111; border-radius:16px; padding:48px 40px; max-width:420px; text-align:center; border:1px solid #222; }
+    .logo { font-size:24px; font-weight:900; color:#fff; margin-bottom:32px; }
+    .logo span { color:#FF1A81; }
+    .icon { font-size:48px; margin-bottom:16px; }
+    h1 { color:#fff; font-size:22px; margin:0 0 12px; }
+    p { color:#999; font-size:14px; line-height:1.6; margin:0 0 24px; }
+    a { color:#FF1A81; text-decoration:none; font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo"><span>Tok</span>Saver</div>
+    <div class="icon" style="color:${color}">${success ? "✓" : "✗"}</div>
+    <h1>${title}</h1>
+    <p>${message}</p>
+    <a href="https://tok-saver.vercel.app">← Back to TokSaver</a>
+  </div>
+</body>
+</html>`;
+}
 
 // ─── Password Reset ───────────────────────────────────────────────────────────
 

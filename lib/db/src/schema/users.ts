@@ -14,6 +14,8 @@ export const usersTable = pgTable("users", {
   // Password reset OTP
   resetCode: text("reset_code"),
   resetCodeExpiresAt: timestamp("reset_code_expires_at", { withTimezone: true }),
+  // Email preferences
+  emailUnsubscribed: boolean("email_unsubscribed").notNull().default(false),
 });
 
 export const insertUserSchema = createInsertSchema(usersTable).omit({
