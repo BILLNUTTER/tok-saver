@@ -6,16 +6,32 @@ const SENDER = "nutterxtech@gmail.com";
 const APP_NAME = "TokSaver";
 const APP_URL = process.env.APP_URL || "https://tok-saver.vercel.app";
 
+// Singleton transporter — created once, connection pooled and reused.
+// Creating a new transporter per email causes a full TCP+TLS+auth handshake
+// on every send which adds 1-3s of latency per email.
+let _transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
+let _transporterReady = false;
+
 function getTransporter() {
   const pass = process.env.GMAIL_APP_PASSWORD;
   if (!pass) {
     logger.warn("GMAIL_APP_PASSWORD not set — emails will be skipped");
     return null;
   }
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: { user: SENDER, pass: pass.replace(/\s/g, "") },
-  });
+  if (!_transporter || !_transporterReady) {
+    _transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      pool: true,
+      maxConnections: 3,
+      maxMessages: Infinity,
+      auth: { user: SENDER, pass: pass.replace(/\s/g, "") },
+    });
+    _transporterReady = true;
+    logger.info("SMTP transporter initialised (pooled)");
+  }
+  return _transporter;
 }
 
 // ─── Unsubscribe helpers ──────────────────────────────────────────────────────

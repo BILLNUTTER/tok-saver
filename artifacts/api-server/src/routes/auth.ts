@@ -55,7 +55,8 @@ router.post("/auth/register", async (req, res): Promise<void> => {
 
   const token = signToken({ userId: user.id, email: user.email });
 
-  sendWelcomeEmail(user.name, user.email).catch((e) => logger.error({ err: e }, "Failed to send welcome email"));
+  // Only send the verification code — welcome email fires after they verify.
+  // Sending two emails simultaneously on registration caused SMTP contention.
   sendVerificationCodeEmail(user.name, user.email, verificationCode).catch((e) =>
     logger.error({ err: e }, "Failed to send verification code email")
   );
@@ -225,6 +226,12 @@ router.post("/auth/verify-email", requireAuth, async (req, res): Promise<void> =
     .where(eq(usersTable.id, user.id));
 
   logger.info({ userId: user.id }, "Email verified");
+
+  // Now that they're verified, send the welcome email
+  sendWelcomeEmail(user.name, user.email).catch((e) =>
+    logger.error({ err: e }, "Failed to send welcome email post-verification")
+  );
+
   res.json({ message: "Email verified successfully" });
 });
 
